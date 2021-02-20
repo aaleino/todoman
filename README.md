@@ -12,7 +12,7 @@ For example:
 ![demo](https://github.com/aaleino/todoman/blob/main/todoman.gif "Todo manager demo")
 
 
-Produces
+produces
 
      Work
           - [x] Write article

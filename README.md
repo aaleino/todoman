@@ -23,8 +23,9 @@ Produces
 Installation
 ============
 
-	git clone --recurse-submodules -j8 https://github.com/aaleino/todoman
+	git clone https://github.com/aaleino/todoman
 	cd todoman
+	git clone https://github.com/aaleino/FTXUI
 	cmake .
 	cmake --build .
 	

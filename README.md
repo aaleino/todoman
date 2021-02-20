@@ -39,8 +39,10 @@ Usage
 =====
 
 Usage: 
+
 	./todoman <filename.md>
-        /todoman <filename.md> <work interval duration minutes> <pause duration in minutes> <total (e.g. daily) work time hours> <keyword=restart>
+	
+        ./todoman <filename.md> <work interval duration minutes> <pause duration in minutes> <total (e.g. daily) work time hours> <keyword=restart>
 
 Example:
 

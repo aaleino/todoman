@@ -44,6 +44,10 @@ Example:
 	./todoman todo.md
 
 Open todo.md for editing, use default intervals (25 min work 5 min pause)
+Use up down right left in the menu to navitage. 
+
+!!ISSUE: Currently the focus might be lost, just move up or down to make it visible again.!!
+
 
 	./todoman todo.md 40 10
 

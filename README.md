@@ -1,6 +1,6 @@
 # Todo manager
 
-Creates to-do lists in .md files. The program makes the lists easily editable and helps to divide tasks into subtasks. It also helps to track time in a 'Pomodoro' -like workflow. 
+Creates to-do lists in .md files. The program makes the lists easily readable and editable and helps to divide tasks into subtasks. It also helps to track time in a 'Pomodoro' -like workflow. 
 
 This is an experimental hobby project. 
 

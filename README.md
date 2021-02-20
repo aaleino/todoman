@@ -38,9 +38,6 @@ So far tested only in WSL+windows terminal
 Usage
 =====
 
-Usage: 	
-
-./todoman <filename.md> <work interval duration in minutes> <pause duration in minutes> <total (e.g. daily) work time hours> <keyword=restart>
 
 Example:
 

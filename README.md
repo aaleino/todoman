@@ -33,8 +33,7 @@ Installation
 Target environment
 ==================
 
-So far tested only in WSL+windows terminal
-
+Tested in WSL+Windows terminal, Ubuntu+default terminal 
 
 Usage
 =====

@@ -1,0 +1,3 @@
+[submodule "FTXUI"]
+	path = FTXUI
+	url = git@github.com:aaleino/FTXUI

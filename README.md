@@ -55,6 +55,7 @@ Example:
 As above, but set total working time goal as 7.25h
 
 Example: 
+
 	./todoman todo.md 40 10 7.25 restart
 
 As above, but restart working time

@@ -27,6 +27,12 @@ Installation
 	cd todoman
 	cmake .
 	cmake --build .
+	
+	
+Target environment
+==================
+
+So far tested only in WSL+windows terminal
 
 
 Usage

@@ -2,7 +2,7 @@
 
 Creates to-do lists in .md files. The program makes the lists easily readable and editable and helps to divide tasks into subtasks. It also helps to track time in a 'Pomodoro' -like workflow. 
 
-This is an experimental hobby project. 
+This is an experimental hobby project that is under construction.
 
 Demo
 ====
@@ -60,7 +60,7 @@ As above, but restart working time
 Credits
 =======
 
-(C) Aleksi Leino
+(C) Aleksi Leino 2021
 
 Uses FTXUI by Arthur Sonzogni
 https://github.com/ArthurSonzogni/FTXUI

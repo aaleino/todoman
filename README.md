@@ -57,3 +57,11 @@ As above, but set total working time goal as 7.25h
 
 As above, but restart working time
 
+Credits
+=======
+
+(C) Aleksi Leino
+
+Uses FTXUI by Arthur Sonzogni
+https://github.com/ArthurSonzogni/FTXUI
+(I have forked my own version that reduces blinking in windows terminal)

@@ -36,17 +36,20 @@ Usage:
 	./todoman <filename.md>
         /todoman <filename.md> <work interval duration minutes> <pause duration in minutes> <total (e.g. daily) work time hours> <keyword=restart>
 
-Example: 
+Example:
+
 	./todoman todo.md
 
 Open todo.md for editing, use default intervals (25 min work 5 min pause)
 
 Example: 
+
 	./todoman todo.md 40 10
 
 Open todo.md for editing, use 40 minute interval for work, 10 minute interval for pause
 
 Example: 
+
 	./todoman todo.md 40 10 7.25
 
 As above, but set total working time goal as 7.25h

@@ -10,7 +10,7 @@ Demo
 
 For example:
 
-![demo](https://github.com/aaleino/todoman/raw/master/demo.gif "Todo manager demo")
+![demo](https://github.com/aaleino/todoman/blob/main/todoman.gif "Todo manager demo")
 
 
 Produces

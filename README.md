@@ -45,9 +45,9 @@ Example:
 
 Open todo.md for editing, use default intervals (25 min work 5 min pause)
 
-Use up down right left in the menu to navigate. 
+Use up, down, right, left and enter in the menu to navigate. 
 
-!!ISSUE: Currently the highlight bar might be lost, just move up or down to make the highlight visible again.!!
+**ISSUE: Currently the highlight bar might be lost, just move up or down to make the highlight visible again.**
 
 
 	./todoman todo.md 40 10

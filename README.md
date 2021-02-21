@@ -20,7 +20,7 @@ produces
      - [ ] Hobby
 
 
-Explanation: work was converted to a project, and it contains subitems. Hobby was not and it can be tagged completed/uncompleted.
+Explanation: "Work" was converted to a project, and it contains subitems. "Hobby" was not and it can be tagged completed/uncompleted.
 
 My vision is that these kind of files could also be embedded in e.g. github projects to navigate issues that are too small to entitle their own github issue.
 The to-do list could also act as a reminder in what state the project was left last time.

@@ -1,3 +1,4 @@
 
      - [ ] Implement select task at random
-     - [ ] Fix issue regarding completed projects
+     - [x] Fix issue regarding completed projects
+     - [ ] Fix issue regarding highlighter movement

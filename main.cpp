@@ -488,11 +488,22 @@ class TodoManager : public Component {
 
     menu.on_enter = [&] {
       if (menu.selected == 0) {
-        if (previous_task.size() > 0) {
+	bool all_completed=true;
+	task& ctit = current_active_task;	
+	for(auto ctask : ctit.subtasks) {
+	  if(ctask.completed == false) all_completed=false;
+	}
+	if(all_completed) {
+	  ctit.completed=true;
+	} else {
+	  ctit.completed=false;
+	}
+	if (previous_task.size() > 0) {
           current_active_task = previous_task.back();
           updateSelection();
           previous_task.pop_back();
         }
+	
       } else if (menu.selected == 1) {
         int i = 0;
         task& ctit = current_active_task;
@@ -585,6 +596,7 @@ class TodoManager : public Component {
       task& cat = current_active_task;
       bool all_tasks_completed = true;
       bool found_match = false;
+      
       for (auto& task : cat.subtasks) {
         if (i == todomenu.selected) {
           if (task.subtasks.size() > 0) {
@@ -601,6 +613,7 @@ class TodoManager : public Component {
         }
         i++;
       }
+      
       if (all_tasks_completed) {
         if (previous_task.size() > 0) {
           cat.completed = true;
@@ -612,6 +625,7 @@ class TodoManager : public Component {
     };
 
     current_active_task = _root_task;
+    
     updateSelection();
   }
 
@@ -635,8 +649,8 @@ class TodoManager : public Component {
         taskname = unchecked;
       }
       taskname += to_wstring(task.name);
-      if (task.subtasks.size() > 1) {
-        taskname += L"..";
+      if (task.subtasks.size() > 0) {
+        taskname += L"...";
       }
       items.push_back(taskname);
     }
@@ -670,19 +684,50 @@ class TodoManager : public Component {
   vector<std::reference_wrapper<task>> previous_task;
 };
 
+bool count_uncompleted_tasks(task &task) {
+  int sum=0;
+  if(task.subtasks.size() > 0) {
+    for(auto &ctask : task.subtasks) {
+      sum+=count_uncompleted_tasks(ctask);
+    }
+  }else if(!task.completed) sum++;
+  return sum;
+}
+
+
+// if a project with subtasks has any uncompleted tasks,
+// mark it uncomplete
+void check_completed_projects(task &task) {
+
+  bool all_completed=false;
+  int utasks=0;
+  if(task.subtasks.size() > 0) {
+    for(auto &ctask : task.subtasks) {
+      utasks+=count_uncompleted_tasks(ctask);
+      check_completed_projects(ctask);
+    }
+    if(!utasks) {
+      task.completed=true;
+    }
+  }
+
+  
+  return;
+}
+
 int main(int argc, const char* argv[]) {
   string todofile;
-  
+
   if(argc < 2) {
     printf("Usage: %s <filename.md>\n", argv[0]);
     printf("       %s <filename.md> <work interval duration minutes> <pause duration in minutes> <total (e.g. daily) work time hours> <keyword=restart>\n\n",argv[0]);
-    printf("Example: %s todo.md\n", argv[0]);
+    printf("Examples:%s todo.md\n", argv[0]);
     printf("         Open todo.md for editing, use default intervals (25 min work 5 min pause)\n\n");
-    printf("Example: %s todo.md 40 10\n",argv[0]);
+    printf("         %s todo.md 40 10\n",argv[0]);
     printf("         Open todo.md for editing, use 40 minute interval for work, 10 minute interval for pause\n\n");
-    printf("Example: %s todo.md 40 10 7.25\n",argv[0]);
+    printf("         %s todo.md 40 10 7.25\n",argv[0]);
     printf("         As above, but set total working time goal as 7.25h \n\n");
-    printf("Example: %s todo.md 40 10 7.25 restart\n",argv[0]);
+    printf("         %s todo.md 40 10 7.25 restart\n",argv[0]);
     printf("         As above, but restart the accumulation in working time\n\n");
     return 0;
   }
@@ -727,7 +772,7 @@ int main(int argc, const char* argv[]) {
     root_task.subtasks = extract_tasks(todolist_raw);
 
   }
-
+  check_completed_projects(root_task);
   auto screen = ScreenInteractive::Fullscreen();
   bool should_quit=false;
   

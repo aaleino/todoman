@@ -23,7 +23,7 @@ produces
 Explanation: "Work" was converted to a project, and it contains subitems. "Hobby" was not and it can be tagged completed/uncompleted.
 Subprojects can be started within projects, i.e. one can always convert a to-do -item to a project. 
 
-Reading long to-do lists can be daunting. The file may grow long but should be relatively easy to read if enough subtasks (projects) are used.  
+Reading long to-do lists can be daunting. The file may grow long but should be relatively easy to read with the program if enough subtasks (projects) are used.  
 
 My vision is that these kind of files could also be embedded in e.g. github projects to navigate issues that are too small to entitle their own github issue.
 The to-do list could also act as a reminder in what state the project was left last time. 

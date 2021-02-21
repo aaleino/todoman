@@ -30,7 +30,7 @@ A detailed to-do list could help in reminiscing the state in which the project w
 
 *The file "todo.md" contains a todolist that I use myself to complete this program.*
 
-This is my first FTXUI project (see credits), and coded while trying to figure out how to use it. The code is not very clean, but I hope to clean it if this becomes useful for me or someone else (please give a star to the project if so). 
+This is my first FTXUI project (see credits), and coded while trying to figure out how to use it. The code is not very clean, but I hope to clean it if this becomes useful for me or someone else. Please star the project if so. 
 
 
 Installation

@@ -30,7 +30,7 @@ The to-do list could also act as a reminder in what state the project was left l
 
 *The file "todo.md" contains a todolist that I use myself to complete this program.*
 
-The code is not very clean, but I hope to clean it if this becomes useful for me or someone else (please star the proejct if so). This is my first FTXUI project, so I was also trying to figure out how that works.
+The code is not very clean, but I hope to clean it if this becomes useful for me or someone else (please give a star to the project if so). This is my first FTXUI project, so I was also trying to figure out how that works.
 
 
 Installation

@@ -406,14 +406,14 @@ class GaugeComponent : public Component {
     }
 */
     return hbox({
-        text(fronttext) |size(WIDTH, EQUAL, 30), text(backtext) |size(WIDTH, EQUAL, 30), text(std::to_wstring(int(progress * 100)) + L"% ") |
-            size(WIDTH, EQUAL, 30),
+        text(fronttext) | size(WIDTH, EQUAL, 30), text(backtext) | size(WIDTH, EQUAL, 30), text(std::to_wstring(int(progress * 100)) + L"% ") |
+            size(WIDTH, EQUAL, 5),
         gauge(progress),
     });
   }
   Element Render() override {
     return window(text(L"Time stats"),
-                  vbox({RenderGauge(1) | size(WIDTH, EQUAL, 100) |
+                  vbox({RenderGauge(1)  |
                             color(Color::BlueLight),
                         separator(), RenderGauge(2) | color(Color::GrayDark)})) ;
 

@@ -26,7 +26,7 @@ Subprojects can be started within projects, i.e. one can always convert a to-do 
 Reading long to-do lists can be daunting. The file may grow long but should be relatively easy to read with the program if enough subtasks (projects) are used.  
 
 My vision is that these kind of files could also be embedded in e.g. github projects to navigate issues that are too small to entitle their own github issue.
-The to-do list could also act as a reminder to reminisce the state in which the project was left last time.
+The to-do list could also help in reminiscing the state in which the project was left last time.
 
 *The file "todo.md" contains a todolist that I use myself to complete this program.*
 

@@ -19,6 +19,7 @@ produces
           - [x] Write software
      - [ ] Hobby
 
+The file "todo.md" contains a todolist that I use myself to complete this program.
 
 Installation
 ============
@@ -60,7 +61,7 @@ As above, but set total working time goal as 7.25h
 
 	./todoman todo.md 40 10 7.25 restart
 
-As above, but restart working time
+As above, but restart working time.
 
 Credits
 =======

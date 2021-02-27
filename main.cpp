@@ -647,8 +647,8 @@ class TodoManager : public Component {
         time_at_task_stop = time(NULL);
         working_on_a_task = false;
         accumulated_time += time(NULL) - time_at_task_start;
-        put_to_log("Ended working. Total time " +
-                   to_string(accumulated_time / 60.0f) + " minutes.");
+        put_to_log("Ended working session. Total time " +
+                   to_string((time(NULL) - time_at_task_start)/60.0f) + " minutes.");
         put_to_log("Daily accumulation " + to_string(accumulated_time) +
                    " seconds.");
       }

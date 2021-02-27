@@ -53,7 +53,7 @@ Installation
 	cmake --build .
 	
 
-** when updating the project from GitHub, remember to pull the FTXUI library as well. I have implemented some fixes to it. **
+**when updating the project from GitHub, remember to pull the FTXUI library as well. I have implemented some fixes to it.**
 
 Target environment
 ==================

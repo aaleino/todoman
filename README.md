@@ -45,6 +45,11 @@ If you change the task before the timer has been completed, the work timer will 
 
 The 'daily accumulation' counter increases **only when** working on a task. 
 
+Log
+===
+
+A log is maintained in "todo_log.txt". The log functionality is still under development.
+
 Caveats
 =======
 
@@ -52,11 +57,6 @@ The program automatically saves the file in exit and after 30s intervals.
 **Please do not open any other files with the program than todo lists made with the program.**
 The files can be reorganized using any text editor, but the editor should use whitespace instead of tabs for indentation.
 The standard linux command 'expand' works for also for getting rid of tabs.
-
-Log
-===
-
-A log is maintained in "todo_log.txt". The log functionality is still under development.
 
 Installation
 ============

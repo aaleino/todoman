@@ -45,8 +45,8 @@ If you change the task before the timer has been completed, the work timer will 
 
 The 'daily accumulation' counter increases **only when** working on a task. 
 
-Caveats and good to knows
-=========================
+Caveats
+=======
 
 The program automatically saves the file in exit and after 30s intervals. 
 **Please do not open any other files with the program than todo lists made with the program.**

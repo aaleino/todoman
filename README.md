@@ -35,9 +35,10 @@ This is my first FTXUI project (see credits), and coded while trying to figure o
 The timer
 =========
 
-Pause timer is automatically on.
+The pause timer is automatically on.
 
-Once you start working on any item, it will count the time towards the goal that can be set at command line (see *Usage*).
+Once you start working on any item, the program will count the time towards a goal that can be set at command line (see *Usage*).
+The progress is shown in percentages:  (Current duration) / (Target time) * 100%
 
 If you change the task before the timer has been completed, the work timer not reset. It will reset **only when** you press "stop working".
 

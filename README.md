@@ -50,7 +50,7 @@ Caveats and good to knows
 
 The program automatically saves the file in exit and after 30s intervals. 
 **Please do not open any other files with the program than todo lists made with the program.**
-The files could be reorganized using any text editor, but the editor should use whitespace instead of tabs to indicate whitespace.
+The files could be reorganized using any text editor, but the editor should use whitespace instead of tabs for indentation.
 The standard linux command 'expand' works for also for getting rid of tabs.
 
 Installation

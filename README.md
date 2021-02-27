@@ -45,8 +45,8 @@ If you change the task before the timer has been completed, the work timer will 
 
 The 'daily accumulation' counter increases **only when** working on a task. 
 
-Log
-===
+The log
+=======
 
 A log is maintained in "todo_log.txt". The log functionality is still under development.
 

@@ -37,7 +37,7 @@ The timer
 
 Pause timer is automatically on.
 
-Once you start working on any item, it will count the time towards the goal that can be set using command line (see *Usage*).
+Once you start working on any item, it will count the time towards the goal that can be set at command line (see *Usage*).
 
 If you change the task before the timer has been completed, the work timer not reset. It will reset **only when** you press "stop working".
 
@@ -53,7 +53,7 @@ Installation
 	cmake --build .
 	
 
-** when updating the project from GitHub, remember to pull the FTXUI library as well. I have implemented some fixes to it. **
+**when updating the project from GitHub, remember to pull the FTXUI library as well. I have implemented some fixes to it.**
 
 Target environment
 ==================

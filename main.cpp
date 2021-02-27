@@ -618,29 +618,30 @@ class TodoManager : public Component {
         title_end+=remove_whitespace_from_end(ctit.name);
 	bool first=true;
 	for(auto ct : previous_task) {
-           task &ctask = ct;
-           if(ctask.name.length() > 0) {
-	     if(first){
-	       title_end+=", ";
-	       first=false;
-	     } else {
-	       title_end+="->";
-	     }
+	  task &ctask = ct;
+	  if(ctask.name.length() > 0) {
+	    if(first){
+	      title_end+=", ";
+	      first=false;
+	    } else {
+	      title_end+="->";
+	    }
             title_end+=remove_whitespace_from_end(ctask.name);
-           }   
+	  }   
         }
         title_end+=")";     
 	if(title_end.compare(" ()") > 0) work_task_title+=title_end;
 	
         // if already working on task, do no reset counter
         if(working_on_a_task) {
-
+	  put_to_log("Switched task to " + work_task_title);
         } else {
           // start working on a task
+	  put_to_log("Started a working session. First task " + work_task_title);
           working_on_a_task = true;
           time_at_task_start = time(NULL);
         }
-        put_to_log("Started working on " + work_task_title + "");
+
       } else if (menu.selected == 5) {
         // end working on a task
         work_task_title="Currently not working on a task";
@@ -681,6 +682,11 @@ class TodoManager : public Component {
             return;
           } else {
             task.completed = task.completed ? false : true;
+	    if(task.completed) {
+	      put_to_log("Marked task " + task.name + " as complete");
+	    } else {
+	      put_to_log("Marked task " + task.name + " uncomplete");	      
+	    }
           }
         }
         if (task.completed == false) {
@@ -840,7 +846,7 @@ int main(int argc, const char* argv[]) {
     accumulated_time = 0;
   } else {
     std::ifstream accfile(accumulated_time_filename, std::ifstream::in);
-    logfile.open("log.txt", ios::app);
+    logfile.open("todo_log.txt", ios::app);
     
     std::string line;
     if (getline(accfile, line)) {

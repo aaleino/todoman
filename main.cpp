@@ -363,14 +363,29 @@ class GaugeComponent : public Component {
     wstring backtext;
 
     if (mode == 1) {
-      // show 
+      // show
       if (working_on_a_task) {
         progress = (time(NULL) - time_at_task_start) / tasktime;
-        fronttext = to_wstring(work_task_title);
+        fronttext = L"Task progress";
+        curcol = Color::BlueLight;
+	if(progress >= 1) {
+	  backtext = L"Time to consider a pause!";
+	  curcol = Color::Green;
+	} else {
+	  backtext = L"Not complete";
+	  curcol = Color::BlueLight;
+	}
       } else {
         progress = (time(NULL) - time_at_task_stop) / pausetime;
-        fronttext = L"No active task (pausing) ";
-        backtext = L"Pause not complete";
+        fronttext = L"Pause progress";
+
+	if(progress >= 1) {
+	  backtext = L"You should get back to work!";
+	  curcol = Color::Red;
+	} else {
+	  backtext = L"Not complete";
+	  curcol = Color::BlueLight;
+	}
       }
     }
     if (mode == 2) {
@@ -382,14 +397,17 @@ class GaugeComponent : public Component {
       }
       fronttext = L"Daily accumulation";
       backtext = L"Not complete";
-    }
-    if(progress >= 1) {
-        progress=1;
+
+      if(progress >= 1) {
         backtext = L"Completed";
-    } else {
+	dprogcol = Color::Green;
+      } else {
         backtext = L"Not complete";
+      }
+     
     }
 
+    if(progress >=1) progress =1;
 /*    if (mode == 3) {
       if (working_on_a_task) {
         progress = 0;
@@ -414,10 +432,13 @@ class GaugeComponent : public Component {
   Element Render() override {
     return window(text(L"Time stats"),
                   vbox({RenderGauge(1)  |
-                            color(Color::BlueLight),
-                        separator(), RenderGauge(2) | color(Color::GrayDark)})) ;
+                            color(curcol),
+                        separator(), RenderGauge(2) | color(dprogcol)})) ;
 
   };
+  Color curcol = Color::BlueLight;
+  Color dprogcol = Color::GrayDark;
+
 };
 
 void save_accumulation() {
@@ -429,6 +450,7 @@ void save_accumulation() {
       accfile << accumulated_time;
       accfile.close();
     }       
+
 }
 
 
@@ -465,7 +487,8 @@ class TodoManager : public Component {
                     L"Select task at random",
                     L"Exit"};
     menu.selected = 0;
-
+    
+    timergauge.focusable = false;
     maincontainer.Add(&timergauge);
 
     container.Add(&left_container);
@@ -476,6 +499,9 @@ class TodoManager : public Component {
     left_container.Add(&todomenu);
     left_container.Add(&input_1);
 
+    todomenu.selected_style= bgcolor(Color::Blue);
+    todomenu.focused_style= bgcolor(Color::BlueLight);
+    
     input_1.on_enter = [&] {
       task& ctit = current_active_task;
       task newtask;
@@ -559,10 +585,14 @@ class TodoManager : public Component {
           }
           i++;
         }
+	// if already working on task, do no reset counter
+	if(working_on_a_task) {
 
-        // start working on a task
-        working_on_a_task = true;
-        time_at_task_start = time(NULL);
+	} else {
+	  // start working on a task
+	  working_on_a_task = true;
+	  time_at_task_start = time(NULL);
+	}
         string taskname;
         for (auto pt : previous_task) {
           task& temp = pt;
@@ -641,6 +671,13 @@ class TodoManager : public Component {
     vector<wstring> items;
     int i = 0;
     task& cat = current_active_task;
+
+    if(cat.subtasks.size() == 0) {
+	todomenu.focusable = false;
+    } else {
+        todomenu.focusable = true;
+    }
+
     for (auto& task : cat.subtasks) {
       wstring taskname;
       if (task.completed) {
@@ -658,7 +695,8 @@ class TodoManager : public Component {
   }
 
   Element Render() override {
-    return border(vbox(
+    task& cat = current_active_task;
+    return window(text(to_wstring(cat.name)) | hcenter,vbox(
         {hbox({vbox(todomenu.Render(), input_1.Render() ) | frame, menu.Render()/*, input_1.Render()*/}) |
              flex,
          timergauge.Render() | size(HEIGHT, GREATER_THAN, 5)}));
@@ -682,6 +720,7 @@ class TodoManager : public Component {
   task tmptask;
   std::reference_wrapper<task> current_active_task = tmptask;
   vector<std::reference_wrapper<task>> previous_task;
+  vector<std::reference_wrapper<task>> parent_task;
 };
 
 bool count_uncompleted_tasks(task &task) {

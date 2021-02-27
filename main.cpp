@@ -613,18 +613,25 @@ class TodoManager : public Component {
           }
           i++;
         }
-        work_task_title+=" (";  
-              
-        work_task_title+=remove_whitespace_from_end(ctit.name);
-        for(auto ct : previous_task) {
+	string title_end;
+        title_end+=" (";  
+        title_end+=remove_whitespace_from_end(ctit.name);
+	bool first=true;
+	for(auto ct : previous_task) {
            task &ctask = ct;
            if(ctask.name.length() > 0) {
-            work_task_title+=", ";
-            work_task_title+=remove_whitespace_from_end(ctask.name);
+	     if(first){
+	       title_end+=", ";
+	       first=false;
+	     } else {
+	       title_end+="->";
+	     }
+            title_end+=remove_whitespace_from_end(ctask.name);
            }   
         }
-        work_task_title+=")";        
-
+        title_end+=")";     
+	if(title_end.compare(" ()") > 0) work_task_title+=title_end;
+	
         // if already working on task, do no reset counter
         if(working_on_a_task) {
 
@@ -633,13 +640,7 @@ class TodoManager : public Component {
           working_on_a_task = true;
           time_at_task_start = time(NULL);
         }
-        string taskname;
-        for (auto pt : previous_task) {
-          task& temp = pt;
-          taskname += temp.name + " > ";
-        }
-        taskname += work_task_title;
-        put_to_log("Started working on " + taskname);
+        put_to_log("Started working on " + work_task_title + "");
       } else if (menu.selected == 5) {
         // end working on a task
         work_task_title="Currently not working on a task";

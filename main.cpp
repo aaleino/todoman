@@ -416,7 +416,7 @@ class GaugeComponent : public Component {
      
     }
 
-    if(progress >=1) progress =1;
+    if(progress >=1) progress=1;
 /*    if (mode == 3) {
       if (working_on_a_task) {
         progress = 0;
@@ -528,9 +528,17 @@ class TodoManager : public Component {
       if(menu.selected == 6) {
         int i = 0;
         task& ctit = current_active_task;
-        int rand_task = (int)ctit.subtasks.size()*(float) rand()/RAND_MAX;
-	todomenu.selected = rand_task;
-	todomenu.TakeFocus();
+	
+	vector <int> uncompleted;
+	for(auto ctask : ctit.subtasks) {
+	  if(ctask.completed == false) uncompleted.push_back(i);
+	  i++;
+	}
+	if(uncompleted.size()) {
+	  int rand_task = uncompleted[(int)uncompleted.size()*(float) rand()/RAND_MAX];
+	  todomenu.selected = rand_task;
+	  todomenu.TakeFocus();
+	}
       }
       
       if (menu.selected == 0) {

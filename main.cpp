@@ -21,7 +21,6 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-
 #include <codecvt>
 #include <fstream>
 #include <iostream>
@@ -57,7 +56,7 @@ double pausetime = 60 * 5;
 
 std::ofstream logfile;
 
-std::string work_task_title = "no task started yet";
+std::string work_task_title = "Currently not working on a task";
 std::string accumulated_time_filename = "temp_accumulated_time.txt";
 
 using namespace ftxui;
@@ -235,6 +234,16 @@ string remove_whitespace(string input) {
     }
   }
   return value;
+}
+
+string remove_whitespace_from_end(string input) {
+  int len=input.length();
+  string rvalue = input;
+  if(len == 0) return rvalue;
+  if(isspace(input[input.length()-1])) {
+    rvalue.erase(rvalue.end()-1, rvalue.end());
+  }
+  return rvalue;
 }
 
 bool get_if_checked(string input) {
@@ -430,8 +439,8 @@ class GaugeComponent : public Component {
     });
   }
   Element Render() override {
-    return window(text(L"Time stats"),
-                  vbox({RenderGauge(1)  |
+    return window(text(L"Summary"),
+                  vbox({text(to_wstring(work_task_title)),separator(), RenderGauge(1)  |
                             color(curcol),
                         separator(), RenderGauge(2) | color(dprogcol)})) ;
 
@@ -585,14 +594,26 @@ class TodoManager : public Component {
           }
           i++;
         }
-	// if already working on task, do no reset counter
-	if(working_on_a_task) {
+        work_task_title+=" (";  
+              
+        work_task_title+=remove_whitespace_from_end(ctit.name);
+        for(auto ct : previous_task) {
+           task &ctask = ct;
+           if(ctask.name.length() > 0) {
+            work_task_title+=", ";
+            work_task_title+=remove_whitespace_from_end(ctask.name);
+           }   
+        }
+        work_task_title+=")";        
 
-	} else {
-	  // start working on a task
-	  working_on_a_task = true;
-	  time_at_task_start = time(NULL);
-	}
+        // if already working on task, do no reset counter
+        if(working_on_a_task) {
+
+        } else {
+          // start working on a task
+          working_on_a_task = true;
+          time_at_task_start = time(NULL);
+        }
         string taskname;
         for (auto pt : previous_task) {
           task& temp = pt;
@@ -602,6 +623,7 @@ class TodoManager : public Component {
         put_to_log("Started working on " + taskname);
       } else if (menu.selected == 5) {
         // end working on a task
+        work_task_title="Currently not working on a task";
         time_at_task_stop = time(NULL);
         working_on_a_task = false;
         accumulated_time += time(NULL) - time_at_task_start;
@@ -849,4 +871,3 @@ int main(int argc, const char* argv[]) {
 
   return 0;
 }
-

@@ -6,3 +6,6 @@
      Features
           - [x] Add the current active project as window title
           - [x] Change tasks without reseting timer
+          Log
+               - [ ] Design format for log
+               - [ ] Add helper program to gather statistics from log

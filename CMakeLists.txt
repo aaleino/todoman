@@ -18,3 +18,5 @@ target_link_libraries(todoman
 set_target_properties(todoman PROPERTIES CXX_STANDARD 17)
 
 install(TARGETS todoman RUNTIME DESTINATION "bin")
+
+execute_process(COMMAND ${CMAKE_COMMAND} -E cmake_echo_color --red Remember to update FTXUI aswell )

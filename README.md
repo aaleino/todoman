@@ -32,6 +32,16 @@ A detailed to-do list could help in remembering the state in which the project w
 
 This is my first FTXUI project (see credits), and coded while trying to figure out how to use it. The code is not very clean, but I hope to clean it if this becomes useful for me or someone else. If you find the program useful, please consider giving a star to the project. 
 
+The timer
+=========
+
+Pause timer is automatically on.
+
+Once you start working on any item, it will count the time towards the goal that can be set using command line (see *Usage*).
+
+If you change the task before the timer has been completed, the work timer not reset. It will reset **only when** you press "stop working".
+
+The 'daily accumulation' counter increases **only when** working on a task. 
 
 Installation
 ============
@@ -42,7 +52,9 @@ Installation
 	cmake .
 	cmake --build .
 	
-	
+
+** when updating the project from GitHub, remember to pull the FTXUI library as well. I have implemented some fixes to it. **
+
 Target environment
 ==================
 
@@ -59,9 +71,6 @@ Example:
 Open todo.md for editing, use default intervals (25 min work 5 min pause)
 
 Use up, down, right, left and enter in the menu to navigate. 
-
-**ISSUE: Currently the highlight bar might be lost, just move up or down to make the highlight visible again.**
-
 
 	./todoman todo.md 40 10
 

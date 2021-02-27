@@ -21,7 +21,7 @@ produces
 
 
 Explanation: "Work" was converted to a project, and it contains subitems. "Hobby" was not and it can be tagged completed/uncompleted.
-Subprojects can be started within projects, i.e. one can always convert a to-do -item to a project. 
+Subprojects can be started within projects, i.e. one can always convert a to-do item to a project. 
 
 Reading long to-do lists can be daunting. The file may grow long but should be relatively easy to read with the program if enough projects (subtasks) are used.  
 
@@ -30,7 +30,7 @@ A detailed to-do list could help in remembering the state in which the project w
 
 *The file "todo.md" contains a todolist that I use myself to complete this program.*
 
-This is my first FTXUI project (see credits), and coded while trying to figure out how to use it. The code is not very clean, but I hope to clean it if this becomes useful. If you find the program useful, please consider giving a star to the project. 
+This is my first FTXUI project (see credits), programmed while figuring out how to use it. The code is not very clean, but I hope to clean it if this becomes useful. If you find the program useful, please consider giving a star to the project.
 
 
 The timer

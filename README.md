@@ -32,6 +32,7 @@ A detailed to-do list could help in remembering the state in which the project w
 
 This is my first FTXUI project (see credits), and coded while trying to figure out how to use it. The code is not very clean, but I hope to clean it if this becomes useful for me or someone else. If you find the program useful, please consider giving a star to the project. 
 
+
 The timer
 =========
 
@@ -43,6 +44,12 @@ The progress is shown in percentages:  (Current duration) / (Target time) * 100%
 If you change the task before the timer has been completed, the work timer not reset. It will reset **only when** you press "stop working".
 
 The 'daily accumulation' counter increases **only when** working on a task. 
+
+Caveats and good to knows
+=========================
+
+The program automatically saves the file in exit and after 30s intervals. 
+**Please do not open any other files with the program than todo lists made with the program.**
 
 Installation
 ============

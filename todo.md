@@ -1,6 +1,6 @@
 
      Issues  
-          - [ ] Implement select task at random
+          - [x] Implement select task at random
           - [x] Fix issue regarding completed projects
           - [x] Fix issue regarding highlighter movement
      Features

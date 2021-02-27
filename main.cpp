@@ -521,7 +521,18 @@ class TodoManager : public Component {
       updateSelection();
     };
 
+    
+    
     menu.on_enter = [&] {
+
+      if(menu.selected == 6) {
+        int i = 0;
+        task& ctit = current_active_task;
+        int rand_task = (int)ctit.subtasks.size()*(float) rand()/RAND_MAX;
+	todomenu.selected = rand_task;
+	todomenu.TakeFocus();
+      }
+      
       if (menu.selected == 0) {
 	bool all_completed=true;
 	task& ctit = current_active_task;	
@@ -633,6 +644,9 @@ class TodoManager : public Component {
                    " seconds.");
       }
 
+      if (menu.selected == 7) {
+        on_quit();
+      }
       if (menu.selected == 7) {
         on_quit();
       }
@@ -778,7 +792,8 @@ void check_completed_projects(task &task) {
 
 int main(int argc, const char* argv[]) {
   string todofile;
-
+  srand(time(NULL));
+  
   if(argc < 2) {
     printf("Usage: %s <filename.md>\n", argv[0]);
     printf("       %s <filename.md> <work interval duration minutes> <pause duration in minutes> <total (e.g. daily) work time hours> <keyword=restart>\n\n",argv[0]);

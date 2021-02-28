@@ -469,8 +469,9 @@ void put_to_log(string entry) {
   char buffer[32];
   // Format: Mo, 15.06.2009 20:20:00
   std::strftime(buffer, 32, "%a, %d.%m.%Y %H:%M:%S", ptm);
+  logfile.open("todo_log.txt", std::ios_base::app);
   logfile << buffer << ": " << entry << "\n";
-  logfile.flush();
+  logfile.close();
 }
 
 class TodoManager : public Component {
@@ -846,7 +847,6 @@ int main(int argc, const char* argv[]) {
     accumulated_time = 0;
   } else {
     std::ifstream accfile(accumulated_time_filename, std::ifstream::in);
-    logfile.open("todo_log.txt", ios::app);
     
     std::string line;
     if (getline(accfile, line)) {
@@ -879,9 +879,6 @@ int main(int argc, const char* argv[]) {
         save_tasks(todofile, root_task);
         save_accumulation();
       }
-      if(current_time - time_at_last_log_save > 30) {
-        logfile.flush();
-      }
 
       screen.PostEvent(Event::Custom);
     }
@@ -897,7 +894,6 @@ int main(int argc, const char* argv[]) {
   save_tasks(todofile, root_task);
   save_accumulation();
   
-  logfile.close();
 
   return 0;
 }

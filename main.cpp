@@ -684,9 +684,9 @@ class TodoManager : public Component {
           } else {
             task.completed = task.completed ? false : true;
 	    if(task.completed) {
-	      put_to_log("Marked task " + task.name + " as complete");
+	      put_to_log("Marked task \"" + task.name + "\" as complete");
 	    } else {
-	      put_to_log("Marked task " + task.name + " uncomplete");	      
+	      put_to_log("Marked task \"" + task.name + "\" uncomplete");	      
 	    }
           }
         }

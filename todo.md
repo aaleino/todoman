@@ -9,3 +9,6 @@
           Log
                - [ ] Design format for log
                - [ ] Add helper program to gather statistics from log
+          Smarter file access
+               - [ ] Event based saves
+               - [ ] Support for simultaneous editing at multiple places

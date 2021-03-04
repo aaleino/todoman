@@ -1,6 +1,6 @@
 # Todo manager
 
-Creates to-do lists in .md files. The program makes the lists easily readable and editable and helps to divide tasks into subtasks. It also helps to track time. 
+The program makes the todo lists easily readable and editable and helps to divide tasks into subtasks. It also helps to track time. 
 This is an experimental hobby project that is under construction.
 
 Demo

@@ -1,7 +1,6 @@
 # Todo manager
 
 Creates to-do lists in .md files. The program makes the lists easily readable and editable and helps to divide tasks into subtasks. It also helps to track time. 
-
 This is an experimental hobby project that is under construction.
 
 Demo
@@ -30,9 +29,6 @@ A detailed to-do list could help in remembering the state in which the project w
 
 *The file "todo.md" contains a todolist that I use myself to complete this program.*
 
-This is my first FTXUI project (see credits), programmed while figuring out how to use it. The code is not very clean, but I hope to clean it if this becomes useful. If you find the program useful, please consider giving a star to the project.
-
-
 The timer
 =========
 
@@ -50,11 +46,10 @@ The log
 
 A log is maintained in "todo_log.txt". The log functionality is still under development.
 
-Caveats
-=======
+Caveat
+======
 
-The program automatically saves the file in exit and after 30s intervals. 
-**Please do not open any other files with the program than todo lists made with the program.**
+**Do not open any other files with the program than todo lists made with the program.**
 The files can be reorganized using any text editor, but the editor should use whitespace instead of tabs for indentation.
 Linux command 'expand' works for getting rid of tabs.
 
@@ -68,7 +63,7 @@ Installation
 	cmake --build .
 	
 
-**when updating the project from GitHub, remember to pull the FTXUI library as well. I have implemented some fixes to it.**
+**when updating the project from GitHub, remember to pull the FTXUI library as well.**
 
 Target environment
 ==================

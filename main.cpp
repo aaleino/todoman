@@ -840,7 +840,6 @@ int main(int argc, const char* argv[]) {
 
   time_at_task_stop = time(NULL);
   auto time_at_last_todo_save=time(NULL);
-  auto time_at_last_log_save=time(NULL);
 
 
   if(argc > 5 && !string(argv[5]).compare("restart")) {
@@ -866,18 +865,17 @@ int main(int argc, const char* argv[]) {
   check_completed_projects(root_task);
   auto screen = ScreenInteractive::Fullscreen();
   bool should_quit=false;
-  
-  std::thread update([&screen, &todofile, &root_task, &should_quit, &time_at_last_todo_save, &time_at_last_log_save]() {
+
+  std::thread update([&screen, &todofile, &root_task, &should_quit, &time_at_last_todo_save]() {
     while (!should_quit) {
       using namespace std::chrono_literals;
       std::this_thread::sleep_for(0.3s);
       current_time = time(NULL);
-      time_at_last_todo_save=time(NULL);
-      time_at_last_log_save=time(NULL);      
 
       if(current_time - time_at_last_todo_save > 30) {
         save_tasks(todofile, root_task);
         save_accumulation();
+        time_at_last_todo_save=time(NULL);
       }
 
       screen.PostEvent(Event::Custom);

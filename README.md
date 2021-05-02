@@ -57,13 +57,9 @@ Installation
 ============
 
 	git clone https://github.com/aaleino/todoman
-	cd todoman
-	git clone https://github.com/aaleino/FTXUI
 	cmake .
 	cmake --build .
 	
-
-**when updating the project from GitHub, remember to pull the FTXUI library as well.**
 
 Target environment
 ==================

@@ -447,7 +447,6 @@ class GaugeComponent : public Component {
   };
   Color curcol = Color::BlueLight;
   Color dprogcol = Color::GrayDark;
-
 };
 
 void save_accumulation() {
@@ -498,7 +497,6 @@ class TodoManager : public Component {
                     L"Exit"};
     menu.selected = 0;
     
-    timergauge.focusable = false;
     maincontainer.Add(&timergauge);
 
     container.Add(&left_container);
@@ -536,7 +534,7 @@ class TodoManager : public Component {
 	  i++;
 	}
 	if(uncompleted.size()) {
-	  int rand_task = uncompleted[(int)uncompleted.size()*(float) rand()/RAND_MAX];
+	  int rand_task = uncompleted[rand() % uncompleted.size()];
 	  todomenu.selected = rand_task;
 	  todomenu.TakeFocus();
 	}
@@ -723,12 +721,6 @@ class TodoManager : public Component {
     vector<wstring> items;
     int i = 0;
     task& cat = current_active_task;
-
-    if(cat.subtasks.size() == 0) {
-	todomenu.focusable = false;
-    } else {
-        todomenu.focusable = true;
-    }
 
     for (auto& task : cat.subtasks) {
       wstring taskname;

@@ -765,14 +765,16 @@ public:
       else if (menu.selected == 5)
       {
         // end working on a task
-        work_task_title = "Currently not working on a task";
-        time_at_task_stop = time(NULL);
-        working_on_a_task = false;
-        accumulated_time += time(NULL) - time_at_task_start;
-        put_to_log("Ended working session. Total time " +
-                   to_string((time(NULL) - time_at_task_start) / 60.0f) + " minutes.");
-        put_to_log("Daily accumulation " + to_string(accumulated_time) +
-                   " seconds.");
+        if(working_on_a_task == true) {
+          work_task_title = "Currently not working on a task";
+          time_at_task_stop = time(NULL);
+          working_on_a_task = false;
+          accumulated_time += time(NULL) - time_at_task_start;
+          put_to_log("Ended working session. Total time " +
+                    to_string((time(NULL) - time_at_task_start) / 60.0f) + " minutes.");
+          put_to_log("Daily accumulation " + to_string(accumulated_time) +
+                    " seconds.");
+        }
       }
 
       if (menu.selected == 7)

@@ -39,7 +39,7 @@ The progress is shown in percentages:  (Current duration) / (Target time) * 100%
 
 If you change the task before the timer has been completed, the work timer will not reset. It will reset **only when** you press "stop working".
 
-The 'daily accumulation' counter increases **only when** working on a task. 
+The 'daily accumulation' counter increases **only when** working on a task. It will keep on increasing also after task progress reaches 100%.
 
 The log
 =======

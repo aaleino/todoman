@@ -387,7 +387,7 @@ int print_menu(vector<string> todolist, string title)
       if (todolist_parsed[selected_item].size() > 1)
       {
         // task contains subtasks
-        // remove the parent task this function again
+        // remove the parent task
         vector<string> subtodolist;
         for (int j = 1; j < todolist_parsed[selected_item].size(); j++)
         {
@@ -419,10 +419,24 @@ public:
   MyInput(){
 
   };
+
+  std::function<void()> on_pageup = []() {};
+  std::function<void()> on_pagedown = []() {};
+
   Element Render()
   {
     return (vbox({hbox({Input::Render() | size(HEIGHT, EQUAL, 1)}) |
                   size(WIDTH, EQUAL, 40)}));
+  }
+
+  bool OnEvent(Event event) override {
+    if(event == Event::Special("\x1b[5~")) {
+      on_pageup();
+    } else if(event == Event::Special("\x1b[6~")) {
+      on_pagedown();
+    } else {
+      return  Input::OnEvent(event);
+    }
   }
 };
 
@@ -557,6 +571,23 @@ void put_to_log(string entry)
   logfile << buffer << ": " << entry << "\n";
   logfile.close();
 }
+
+class TodoMenu : public Menu {
+public:
+  TodoMenu() {};
+  std::function<void()> on_pageup = []() {};
+  std::function<void()> on_pagedown = []() {};
+
+  bool OnEvent(Event event) override {
+    if(event == Event::Special("\x1b[5~")) {
+      on_pageup();
+    } else if(event == Event::Special("\x1b[6~")) {
+      on_pagedown();
+    } else {
+      return  Menu::OnEvent(event);
+    }
+  }
+};
 
 class TodoManager : public Component
 {
@@ -787,6 +818,33 @@ public:
       }
     };
 
+    todomenu.on_pageup = [&] {
+        todomenu.selected = 0;
+    };
+
+    todomenu.on_pagedown = [&] {
+        task ctask = current_active_task;
+        if(todomenu.selected == todomenu.entries.size() - 1) {
+          input_1.TakeFocus();
+        } else{
+          todomenu.selected = todomenu.entries.size()-1;
+        }
+    };
+
+    menu.on_pageup = [&] {
+        menu.selected = 0;
+    };
+
+    menu.on_pagedown = [&] {
+        menu.selected = menu.entries.size()-1;
+    };
+
+
+    input_1.on_pageup = [&] {
+      todomenu.TakeFocus();
+      todomenu.selected = todomenu.entries.size()-1;
+    };
+
     todomenu.on_change = [&] {
 
     };
@@ -911,7 +969,8 @@ private:
   Container right_container = Container::Vertical();
 
   //  Container lower_sub_container = Container::Vertical();
-  Menu menu, todomenu;
+  TodoMenu menu;
+  TodoMenu todomenu;
   MyInput input_1;
   GaugeComponent timergauge;
 

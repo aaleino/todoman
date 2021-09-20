@@ -1,6 +1,6 @@
 # Todo manager
 
-The program makes the todo lists easily readable and editable and helps to divide tasks into subtasks. It also helps to track time. 
+This program makes todo lists easily readable and editable and helps to divide tasks into subtasks. It also helps to track time. 
 This is an experimental hobby project that is under construction.
 
 Demo
@@ -24,7 +24,7 @@ Subprojects can be started within projects, i.e. one can always convert a to-do 
 
 Reading long to-do lists can be daunting. The file may grow long but should be relatively easy to read with the program if enough projects (subtasks) are used.  
 
-My vision is the program will allow very detailed to-do lists while also being able to help structure large and more abstract tasks.
+My vision is the program will allow users to create very detailed to-do lists and help them to organize large and more abstract tasks.
 A detailed to-do list could help in remembering the state in which the project was left last time.
 
 *The file "todo.md" contains a todolist that I use myself to complete this program.*

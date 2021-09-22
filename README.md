@@ -76,7 +76,7 @@ Example:
 
 Open todo.md for editing, use default intervals (25 min work 5 min pause)
 
-Use up, down, right, left and enter in the menu to navigate. 
+Use up, down, right, left, pgup, pgdown and enter in the menu to navigate. 
 
 	./todoman todo.md 40 10
 

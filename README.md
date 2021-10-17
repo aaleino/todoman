@@ -10,7 +10,6 @@ For example:
 
 ![demo](https://github.com/aaleino/todoman/blob/main/todoman.gif "Todo manager demo")
 
-
 produces
 
      Work
@@ -28,6 +27,14 @@ My vision is the program will allow users to create very detailed to-do lists an
 A detailed to-do list could help in remembering the state in which the project was left last time.
 
 *The file "todo.md" contains a todolist that I use myself to complete this program.*
+
+Update 17.10: New feature
+=========================
+
+Thanks for all who have starred the program! This motivated me to continue working on it! :) The program can now also be used to write small notes. 
+In addition, support for pgup and pgdown has been added, which makes navigation slightly easier.
+
+![demo](https://github.com/aaleino/todoman/blob/main/feature_notes.gif "Note demo")
 
 The timer
 =========

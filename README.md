@@ -62,6 +62,8 @@ Linux command 'expand' works for getting rid of tabs.
 Installation
 ============
 
+Assuming recent enough CMake is installed:
+
 	git clone https://github.com/aaleino/todoman
 	cmake .
 	cmake --build .

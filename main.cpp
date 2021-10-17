@@ -55,6 +55,14 @@ double pausetime = 60 * 5;
 std::ofstream logfile;
 
 std::string work_task_title = "Currently not working on a task";
+
+std::string saved_message;
+bool annotate = false;
+bool annotation_begins=true;
+time_t annotation_start;
+std::string annotation;
+
+
 std::string accumulated_time_filename = "temp_accumulated_time.txt";
 
 using namespace ftxui;
@@ -214,6 +222,10 @@ string trim_to_title(string input)
     {
       i = 6;
     }
+    if (input[0] == '-' && input[1] == ' ' && input[2] != '[')
+    {
+      i = 2;
+    }
   }
   for (; i < input.length(); i++)
   {
@@ -245,6 +257,7 @@ double get_relative_size(string input)
 
 struct task
 {
+  bool is_note;
   bool completed;
   double importance;
   string name;
@@ -283,7 +296,7 @@ string remove_whitespace_from_end(string input)
   return rvalue;
 }
 
-bool get_if_checked(string input)
+bool check_if_checked(string input)
 {
   string value;
   bool has_begun = false;
@@ -300,6 +313,23 @@ bool get_if_checked(string input)
   return false;
 }
 
+bool check_if_note(string input)
+{
+  string value;
+  bool has_begun = false;
+  if (input.length() >= 4)
+  {
+    if (input[0] == '-' && input[1] == ' ' && input[2] != '[')
+    {
+      return true;
+    }
+    else
+      return false;
+  }
+  return false;
+}
+
+
 std::list<task> extract_tasks(vector<string> todolist)
 {
   auto todolist_parsed = parse_tasks(todolist);
@@ -310,8 +340,15 @@ std::list<task> extract_tasks(vector<string> todolist)
 
     newtask.name = trim_to_title(remove_whitespace(todolist_parsed[i][0]));
 
-    newtask.completed =
-        get_if_checked(remove_whitespace(todolist_parsed[i][0]));
+    newtask.is_note = check_if_note(remove_whitespace(todolist_parsed[i][0]));
+
+    if(!newtask.is_note) {
+        newtask.completed = 
+            check_if_checked(remove_whitespace(todolist_parsed[i][0]));
+    } else {
+        newtask.completed = true;
+    }
+
     newtask.importance = get_relative_size(todolist_parsed[i][0]);
 
     if (todolist_parsed[i].size() > 1)
@@ -335,15 +372,21 @@ void print_task_rec(ofstream &file, task &task, int level)
     file << " ";
   }
 
-  if (task.completed && task.subtasks.size() == 0)
+  if (task.is_note && task.subtasks.size() == 0)
   {
-    file << "- [x] ";
+    file << "- ";
+  } else {
+    if (task.completed && task.subtasks.size() == 0)
+    {
+      file << "- [x] ";
+    }
+
+    if (!task.completed && task.subtasks.size() == 0)
+    {
+      file << "- [ ] ";
+    }
   }
 
-  if (!task.completed && task.subtasks.size() == 0)
-  {
-    file << "- [ ] ";
-  }
   file << task.name << "\n";
 
   for (auto subtask : task.subtasks)
@@ -362,47 +405,6 @@ void save_tasks(string filename, task &task)
   return;
 }
 
-int print_menu(vector<string> todolist, string title)
-{
-  auto todolist_parsed = parse_tasks(todolist);
-
-  string menuoptions;
-  int i;
-  int rvalue = 0;
-
-  do
-  {
-    menuoptions.clear();
-    vector<double> importances;
-    importances.clear();
-    for (i = 0; i < todolist_parsed.size(); i++)
-    {
-      importances.push_back(get_relative_size(todolist_parsed[i][0]));
-    }
-    int cmd;
-    if (cmd > 0 && cmd <= todolist_parsed.size())
-    {
-      int selected_item = cmd - 1;
-      // open menu for subitems
-      if (todolist_parsed[selected_item].size() > 1)
-      {
-        // task contains subtasks
-        // remove the parent task
-        vector<string> subtodolist;
-        for (int j = 1; j < todolist_parsed[selected_item].size(); j++)
-        {
-          subtodolist.push_back(todolist_parsed[selected_item][j]);
-        }
-        rvalue = print_menu(subtodolist, todolist_parsed[selected_item][0]);
-      }
-      else if (todolist_parsed[selected_item].size() == 1)
-      {
-      }
-    }
-  } while (rvalue != 0);
-  return 0;
-}
-
 class NumberedCheckBox : public CheckBox
 {
 public:
@@ -413,30 +415,87 @@ public:
   int number;
 };
 
+// quick and dirty
 class MyInput : public Input
 {
 public:
-  MyInput(){
+  int colormode;
 
-  };
+  MyInput() {};
 
+  void set_colormode(int _colormode) {
+    colormode=_colormode;
+  }
   std::function<void()> on_pageup = []() {};
   std::function<void()> on_pagedown = []() {};
 
   Element Render()
   {
-    return (vbox({hbox({Input::Render() | size(HEIGHT, EQUAL, 1)}) |
+    return (vbox({hbox({Modified_Render() | size(HEIGHT, EQUAL, 1)}) |
                   size(WIDTH, EQUAL, 40)}));
   }
 
-  bool OnEvent(Event event) override {
-    if(event == Event::Special("\x1b[5~")) {
+  bool OnEvent(Event event) override
+  {
+    if (event == Event::Special("\x1b[5~"))
+    {
       on_pageup();
-    } else if(event == Event::Special("\x1b[6~")) {
-      on_pagedown();
-    } else {
-      return  Input::OnEvent(event);
     }
+    else if (event == Event::Special("\x1b[6~"))
+    {
+      on_pagedown();
+    }
+    else
+    {
+      return Input::OnEvent(event);
+    }
+  }
+
+  Element Modified_Render()
+  {
+    cursor_position = std::max(0, std::min<int>(content.size(), cursor_position));
+    auto main_decorator = flex | size(HEIGHT, EQUAL, 1);
+    bool is_focused = Focused();
+
+    // Placeholder.
+    if (content.size() == 0)
+    {
+      if (is_focused) {
+        if(colormode==1) {
+          return text(placeholder) | focus | dim | inverted | main_decorator;
+        } else {
+          return text(placeholder) | focus | dim | color(Color::GreenLight) | inverted | main_decorator;
+        }
+      } else {
+        if(colormode==1) {
+          return text(placeholder) | dim | main_decorator;
+        } else {
+          return text(placeholder) | color(Color::Green) | main_decorator;
+        }
+      }
+    }
+
+    // Not focused.
+    if (!is_focused)
+      return text(content) | main_decorator;
+
+    std::wstring part_before_cursor = content.substr(0, cursor_position);
+    std::wstring part_at_cursor = cursor_position < (int)content.size()
+                                      ? content.substr(cursor_position, 1)
+                                      : L" ";
+    std::wstring part_after_cursor = cursor_position < (int)content.size() - 1
+                                         ? content.substr(cursor_position + 1)
+                                         : L"";
+    auto focused = is_focused ? focus : ftxui::select;
+
+    // clang-format off
+    return
+      hbox(
+        text(part_before_cursor),
+        text(part_at_cursor) | underlined | focused,
+        text(part_after_cursor)
+      ) | flex | inverted | frame | main_decorator;
+    // clang-format off
   }
 };
 
@@ -512,21 +571,7 @@ public:
 
     if (progress >= 1)
       progress = 1;
-    /*    if (mode == 3) {
-      if (working_on_a_task) {
-        progress = 0;
-      } else {
-        progress = (time(NULL) - time_at_task_stop) / pausetime;
-      }
-      fronttext = L"Pause duration";
-    }
-    if (progress >= 1) {
-      return hbox({
-          text(fronttext)|size(WIDTH, EQUAL, 30), text(L" COMPLETED ") | size(WIDTH, EQUAL, 30),
-          gauge(progress),
-      });
-    }
-*/
+
     return hbox({
         text(fronttext) | size(WIDTH, EQUAL, 30),
         text(backtext) | size(WIDTH, EQUAL, 30),
@@ -575,6 +620,7 @@ void put_to_log(string entry)
 class TodoMenu : public Menu {
 public:
   TodoMenu() {};
+  std::vector<int> itemcolors;
   std::function<void()> on_pageup = []() {};
   std::function<void()> on_pagedown = []() {};
 
@@ -587,6 +633,26 @@ public:
       return  Menu::OnEvent(event);
     }
   }
+
+  Element Render() {
+  std::vector<Element> elements;
+  bool is_focused = Focused();
+  for (size_t i = 0; i < entries.size(); ++i) {
+    auto style = (selected != int(i))
+                     ? normal_style
+                     : is_focused ? focused_style : selected_style;
+    auto focused = (selected != int(i)) ? nothing : is_focused ? focus : ftxui::select;
+    auto icon = (selected != int(i)) ? L"  " : L"> ";
+    if(itemcolors.size() == entries.size() && itemcolors[i] == 1) {
+      elements.push_back(text(icon + entries[i]) | color(Color::GreenLight) | style | focused);
+    } else {
+      elements.push_back(text(icon + entries[i]) | style | focused);
+    }
+  }
+  return vbox(std::move(elements));
+}
+
+
 };
 
 class TodoManager : public Component
@@ -596,6 +662,9 @@ public:
 
   TodoManager(task &_root_task)
   {
+    input_1.set_colormode(1);
+    input_2.set_colormode(2);
+
     Add(&maincontainer);
     maincontainer.Add(&container);
 
@@ -607,8 +676,9 @@ public:
 
     menu.entries = {L"Go Back",
                     L"Add task above",
+                    L"Add note above",
                     L"Convert to project",
-                    L"Remove task",
+                    L"Remove task / note",
                     L"Start working",
                     L"Stop working",
                     L"Select task at random",
@@ -621,9 +691,15 @@ public:
     container.Add(&left_container);
     container.Add(&right_container);
     input_1.placeholder = L"Enter new task here";
+    input_2.placeholder = L"Enter new note here";
 
+/*
+    input_2.color = fgcolor(Color::Blue);
+    input_1.color = bgcolor(Color::BlueLight);
+*/
     right_container.Add(&menu);
     left_container.Add(&todomenu);
+    left_container.Add(&input_2);
     left_container.Add(&input_1);
 
     todomenu.selected_style = bgcolor(Color::Blue);
@@ -633,14 +709,26 @@ public:
       task &ctit = current_active_task;
       task newtask;
       newtask.completed = false;
+      newtask.is_note = false;
       newtask.name = to_string(input_1.content);
       ctit.subtasks.push_back(newtask);
       input_1.content = L"";
       updateSelection();
     };
 
+    input_2.on_enter = [&] {
+      task &ctit = current_active_task;
+      task newtask;
+      newtask.completed = true;
+      newtask.is_note = true;
+      newtask.name = to_string(input_2.content);
+      ctit.subtasks.push_back(newtask);
+      input_2.content = L"";
+      updateSelection();
+    };
+
     menu.on_enter = [&] {
-      if (menu.selected == 6)
+      if (menu.selected == 7)
       {
         int i = 0;
         task &ctit = current_active_task;
@@ -693,6 +781,8 @@ public:
           if (i == todomenu.selected)
           {
             task newtask;
+            newtask.is_note = false;
+            newtask.completed = false;
             newtask.name = to_string(input_1.content);
             ctit.subtasks.insert(it, newtask);
           }
@@ -702,28 +792,48 @@ public:
       }
       else if (menu.selected == 2)
       {
-        // convert to project
         int i = 0;
         task &ctit = current_active_task;
         for (auto it = ctit.subtasks.begin(); it != ctit.subtasks.end(); ++it)
         {
           if (i == todomenu.selected)
           {
+            task newtask;
+            newtask.is_note = true;
+            newtask.completed = false;
+            newtask.name = to_string(input_2.content);
+            ctit.subtasks.insert(it, newtask);
+          }
+          i++;
+        }
+        updateSelection();
+      }
+      else if (menu.selected == 3)
+      {
+        // convert to project
+        int i = 0;
+        task &ctit = current_active_task;
+
+        for (auto it = ctit.subtasks.begin(); it != ctit.subtasks.end(); ++it)
+        {
+
+          if (i == todomenu.selected)
+          {
+            if((*it).is_note) {
+              annotate=true;
+              annotation="Cannot convert note to project!";
+              return;
+            }
             previous_task.push_back(ctit);
             current_active_task = *it;
             input_1.TakeFocus();
-            /*
-            task newtask;
-            newtask.name = "Task 1";
-            (*it).subtasks.push_back(newtask);
-            */
           }
           i++;
         }
 
         updateSelection();
       }
-      else if (menu.selected == 3)
+      else if (menu.selected == 4)
       {
         // remove task
         int i = 0;
@@ -742,7 +852,7 @@ public:
           i++;
         }
       }
-      else if (menu.selected == 4)
+      else if (menu.selected == 5)
       {
         int i = 0;
         task &ctit = current_active_task;
@@ -750,6 +860,11 @@ public:
         {
           if (i == todomenu.selected)
           {
+            if((*it).is_note) {
+              annotate=true;
+              annotation="Cannot start working on a note!";
+              return;
+            }
             work_task_title = (*it).name;
             break;
           }
@@ -762,6 +877,7 @@ public:
         for (auto ct : previous_task)
         {
           task &ctask = ct;
+
           if (ctask.name.length() > 0)
           {
             if (first)
@@ -780,6 +896,7 @@ public:
         if (title_end.compare(" ()") > 0)
           work_task_title += title_end;
 
+
         // if already working on task, do no reset counter
         if (working_on_a_task)
         {
@@ -793,7 +910,7 @@ public:
           time_at_task_start = time(NULL);
         }
       }
-      else if (menu.selected == 5)
+      else if (menu.selected == 6)
       {
         // end working on a task
         if(working_on_a_task == true) {
@@ -808,11 +925,7 @@ public:
         }
       }
 
-      if (menu.selected == 7)
-      {
-        on_quit();
-      }
-      if (menu.selected == 7)
+      if (menu.selected == 8)
       {
         on_quit();
       }
@@ -824,8 +937,10 @@ public:
 
     todomenu.on_pagedown = [&] {
         task ctask = current_active_task;
+        input_2.TakeFocus();
+
+        
         if(todomenu.selected == todomenu.entries.size() - 1) {
-          input_1.TakeFocus();
         } else{
           todomenu.selected = todomenu.entries.size()-1;
         }
@@ -840,11 +955,21 @@ public:
     };
 
 
-    input_1.on_pageup = [&] {
+    input_2.on_pageup = [&] {
       todomenu.TakeFocus();
       todomenu.selected = todomenu.entries.size()-1;
     };
 
+    input_2.on_pagedown = [&] {
+      input_1.TakeFocus();
+      todomenu.selected = todomenu.entries.size()-1;
+    };
+
+
+    input_1.on_pageup = [&] {
+      input_2.TakeFocus();
+      todomenu.selected = todomenu.entries.size()-1;
+    };
     todomenu.on_change = [&] {
 
     };
@@ -904,6 +1029,8 @@ public:
     current_active_task = _root_task;
 
     updateSelection();
+    input_2.TakeFocus();
+
   }
 
   void updateSelection()
@@ -930,17 +1057,23 @@ public:
       todomenu.focusable = true;
     }
 
-
+    vector <int> colors;
     for (auto &task : cat.subtasks)
     {
       wstring taskname;
-      if (task.completed)
-      {
-        taskname = checked;
-      }
-      else
-      {
-        taskname = unchecked;
+      if(!task.is_note) {
+        colors.push_back(0);
+        if (task.completed)
+        {
+          taskname = checked;
+        }
+        else
+        {
+          taskname = unchecked;
+        }
+      } else {
+          colors.push_back(1);
+          taskname = to_wstring("  - ");
       }
       taskname += to_wstring(task.name);
       if (task.subtasks.size() > 0)
@@ -950,13 +1083,14 @@ public:
       items.push_back(taskname);
     }
     todomenu.entries = items;
+    todomenu.itemcolors = colors;
   }
 
   Element Render() override
   {
     task &cat = current_active_task;
     return window(text(to_wstring(cat.name)) | hcenter, vbox(
-                                                            {hbox({vbox(todomenu.Render(), input_1.Render()) | frame, menu.Render() /*, input_1.Render()*/}) |
+                                                            {hbox({vbox(todomenu.Render(), input_2.Render(), input_1.Render()) | frame, menu.Render() /*, input_1.Render()*/}) |
                                                                  flex,
                                                              timergauge.Render() | size(HEIGHT, GREATER_THAN, 5)}));
   }
@@ -971,7 +1105,7 @@ private:
   //  Container lower_sub_container = Container::Vertical();
   TodoMenu menu;
   TodoMenu todomenu;
-  MyInput input_1;
+  MyInput input_1, input_2;
   GaugeComponent timergauge;
 
   Button button_go_back, button_add, button_remove, button_add_subtask,
@@ -1080,6 +1214,7 @@ int main(int argc, const char *argv[])
 
   if (!file_exists(todofile))
   {
+
   }
   else
   {
@@ -1104,11 +1239,27 @@ int main(int argc, const char *argv[])
         time_at_last_todo_save = time(NULL);
       }
 
+      if(annotate) {
+        if(annotation_begins==true) {
+            annotation_start=time(NULL);
+            annotation_begins=false;
+            saved_message=work_task_title;
+            work_task_title = annotation;
+        }
+        if(current_time - annotation_start > 3) {          
+            work_task_title=saved_message;
+            annotate=false;
+            annotation_begins=true;
+        }
+      }
+
       screen.PostEvent(Event::Custom);
     }
   });
 
   TodoManager component(root_task);
+
+
   component.on_quit = screen.ExitLoopClosure();
   screen.Loop(&component);
   should_quit = true;

@@ -6,7 +6,7 @@ include(FetchContent)
 set(FETCHCONTENT_UPDATES_DISCONNECTED TRUE)
 FetchContent_Declare(ftxui
   GIT_REPOSITORY https://github.com/aaleino/FTXUI
-  GIT_TAG 093fe6fc1b7c86344cd27362e4bdcbf9b84d175c
+  GIT_TAG master
 )
 
 FetchContent_GetProperties(ftxui)

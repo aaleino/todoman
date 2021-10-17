@@ -31,10 +31,11 @@ A detailed to-do list could help in remembering the state in which the project w
 Update 17.10: New feature
 =========================
 
-Thanks to all who have given a star to the program. It has motivated me to continue working on it! :) The program can now also be used to write small notes. In addition, support for PgUp and PgDown has been added, which makes navigation slightly easier.
+The program can now also be used to write small notes. In addition, support for PgUp and PgDown has been added, which makes navigation slightly easier.
 
 ![demo](https://github.com/aaleino/todoman/blob/main/feature_notes.gif "Note demo")
 
+Thanks to all who have given a star to the program. It has motivated me to continue working on it.
 
 The timer
 =========

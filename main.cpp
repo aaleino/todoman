@@ -800,7 +800,8 @@ public:
           {
             task newtask;
             newtask.is_note = true;
-            newtask.completed = false;
+            // all notes must be completed
+            newtask.completed = true;
             newtask.name = to_string(input_2.content);
             ctit.subtasks.insert(it, newtask);
           }

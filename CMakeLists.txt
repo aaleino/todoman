@@ -6,7 +6,7 @@ include(FetchContent)
 set(FETCHCONTENT_UPDATES_DISCONNECTED TRUE)
 FetchContent_Declare(ftxui
   GIT_REPOSITORY https://github.com/aaleino/FTXUI
-  GIT_TAG 40929423e0b3eb5e276661be91f183641440cd5c
+  GIT_TAG 093fe6fc1b7c86344cd27362e4bdcbf9b84d175c
 )
 
 FetchContent_GetProperties(ftxui)
@@ -35,3 +35,4 @@ target_link_libraries(todoman
 set_target_properties(todoman PROPERTIES CXX_STANDARD 17)
 
 install(TARGETS todoman RUNTIME DESTINATION "bin")
+

@@ -428,7 +428,7 @@ public:
   }
   std::function<void()> on_pageup = []() {};
   std::function<void()> on_pagedown = []() {};
-
+  
   Element Render()
   {
     return (vbox({hbox({Modified_Render() | size(HEIGHT, EQUAL, 1)}) |
@@ -1247,7 +1247,7 @@ int main(int argc, const char *argv[])
             saved_message=work_task_title;
             work_task_title = annotation;
         }
-        if(current_time - annotation_start > 3) {          
+        if(current_time - annotation_start > 3) {
             work_task_title=saved_message;
             annotate=false;
             annotation_begins=true;

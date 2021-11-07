@@ -18,8 +18,7 @@ produces
      - [ ] Hobby
 
 
-Explanation: "Work" was converted to a project, and it contains subitems. "Hobby" was not and it can be tagged completed/uncompleted.
-Subprojects can be started within projects, i.e. one can always convert a to-do item to a project. 
+Explanation: "Work" was converted to a project, and it contains subitems. "Hobby" was not and it can be tagged completed/uncompleted. "Work" was completed when all the subtasks were completed. Subprojects can be started within projects, i.e. one can always convert a to-do item to a project. 
 
 Reading long to-do lists can be daunting. The file may grow long but should be relatively easy to read with the program if enough projects (subtasks) are used.  
 

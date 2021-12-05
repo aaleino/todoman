@@ -27,14 +27,7 @@ A detailed to-do list could help in remembering the state in which the project w
 
 *The file "todo.md" contains a todolist that I use myself to complete this program.*
 
-Update 17.10: New feature
-=========================
-
-The program can now also be used to write small notes. In addition, support for PgUp and PgDown has been added, which makes navigation slightly easier.
-
-![demo](https://github.com/aaleino/todoman/blob/main/feature_notes.gif "Note demo")
-
-Thanks to all who have given a star to the program. It has motivated me to continue working on it.
+See the change log at the end of this file for a list of recent changes. 
 
 The timer
 =========
@@ -108,3 +101,19 @@ Credits
 Uses FTXUI by Arthur Sonzogni
 https://github.com/ArthurSonzogni/FTXUI
 (I have forked my own version that reduces blinking in windows terminal)
+
+Change log
+==========
+
+5.12.2021:
+
+Support for insert key. Pressing insert in the list will move the highlight so that it is easy to add tasks or notes between others. 
+
+17.10.2021:
+
+The program can now also be used to write small notes. In addition, support for PgUp and PgDown has been added, which makes navigation slightly easier.
+
+![demo](https://github.com/aaleino/todoman/blob/main/feature_notes.gif "Note demo")
+
+Thanks to all who have given a star to the program. It has motivated me to continue working on it.
+

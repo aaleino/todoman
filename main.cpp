@@ -58,10 +58,9 @@ std::string work_task_title = "Currently not working on a task";
 
 std::string saved_message;
 bool annotate = false;
-bool annotation_begins=true;
+bool annotation_begins = true;
 time_t annotation_start;
 std::string annotation;
-
 
 std::string accumulated_time_filename = "temp_accumulated_time.txt";
 
@@ -329,7 +328,6 @@ bool check_if_note(string input)
   return false;
 }
 
-
 std::list<task> extract_tasks(vector<string> todolist)
 {
   auto todolist_parsed = parse_tasks(todolist);
@@ -342,11 +340,14 @@ std::list<task> extract_tasks(vector<string> todolist)
 
     newtask.is_note = check_if_note(remove_whitespace(todolist_parsed[i][0]));
 
-    if(!newtask.is_note) {
-        newtask.completed = 
-            check_if_checked(remove_whitespace(todolist_parsed[i][0]));
-    } else {
-        newtask.completed = true;
+    if (!newtask.is_note)
+    {
+      newtask.completed =
+          check_if_checked(remove_whitespace(todolist_parsed[i][0]));
+    }
+    else
+    {
+      newtask.completed = true;
     }
 
     newtask.importance = get_relative_size(todolist_parsed[i][0]);
@@ -375,7 +376,9 @@ void print_task_rec(ofstream &file, task &task, int level)
   if (task.is_note && task.subtasks.size() == 0)
   {
     file << "- ";
-  } else {
+  }
+  else
+  {
     if (task.completed && task.subtasks.size() == 0)
     {
       file << "- [x] ";
@@ -421,14 +424,16 @@ class MyInput : public Input
 public:
   int colormode;
 
-  MyInput() {};
+  MyInput(){};
 
-  void set_colormode(int _colormode) {
-    colormode=_colormode;
+  void set_colormode(int _colormode)
+  {
+    colormode = _colormode;
   }
   std::function<void()> on_pageup = []() {};
   std::function<void()> on_pagedown = []() {};
-  
+  std::function<void()> on_insert = []() {};
+
   Element Render()
   {
     return (vbox({hbox({Modified_Render() | size(HEIGHT, EQUAL, 1)}) |
@@ -445,6 +450,10 @@ public:
     {
       on_pagedown();
     }
+    else if (event == Event::Special("\x1b[2~"))
+    {
+      on_insert();
+    }
     else
     {
       return Input::OnEvent(event);
@@ -460,16 +469,25 @@ public:
     // Placeholder.
     if (content.size() == 0)
     {
-      if (is_focused) {
-        if(colormode==1) {
+      if (is_focused)
+      {
+        if (colormode == 1)
+        {
           return text(placeholder) | focus | dim | inverted | main_decorator;
-        } else {
+        }
+        else
+        {
           return text(placeholder) | focus | dim | color(Color::GreenLight) | inverted | main_decorator;
         }
-      } else {
-        if(colormode==1) {
+      }
+      else
+      {
+        if (colormode == 1)
+        {
           return text(placeholder) | dim | main_decorator;
-        } else {
+        }
+        else
+        {
           return text(placeholder) | color(Color::Green) | main_decorator;
         }
       }
@@ -623,13 +641,16 @@ public:
   std::vector<int> itemcolors;
   std::function<void()> on_pageup = []() {};
   std::function<void()> on_pagedown = []() {};
+  std::function<void()> on_insert = []() {};
 
   bool OnEvent(Event event) override {
     if(event == Event::Special("\x1b[5~")) {
       on_pageup();
     } else if(event == Event::Special("\x1b[6~")) {
       on_pagedown();
-    } else {
+    } else if(event == Event::Special("\x1b[2~")) {
+      on_insert();
+    }else {
       return  Menu::OnEvent(event);
     }
   }
@@ -706,25 +727,71 @@ public:
     todomenu.focused_style = bgcolor(Color::BlueLight);
 
     input_1.on_enter = [&] {
-      task &ctit = current_active_task;
+      int i = 0;
+
+      task &ctit = current_active_task; 
+/*
       task newtask;
       newtask.completed = false;
       newtask.is_note = false;
       newtask.name = to_string(input_1.content);
       ctit.subtasks.push_back(newtask);
-      input_1.content = L"";
+*/
+      bool added=false;
+      for (auto it = ctit.subtasks.begin(); it != ctit.subtasks.end(); ++it)
+      {
+        if (i == todomenu.selected+1)
+        {
+          task newtask;
+          newtask.is_note = false;
+          newtask.completed = false;
+          newtask.name = to_string(input_1.content);
+          ctit.subtasks.insert(it, newtask);
+          added=true;
+        }
+        i++;
+      }
+      if(!added) {
+        task newtask;
+        newtask.completed = false;
+        newtask.is_note = false;
+        newtask.name = to_string(input_1.content);
+        ctit.subtasks.push_back(newtask);        
+      }
       updateSelection();
+      todomenu.selected++;
+      input_1.content = L"";
+//        updateSelection();
     };
 
     input_2.on_enter = [&] {
+      int i = 0;
+      bool added = false;
       task &ctit = current_active_task;
-      task newtask;
-      newtask.completed = true;
-      newtask.is_note = true;
-      newtask.name = to_string(input_2.content);
-      ctit.subtasks.push_back(newtask);
-      input_2.content = L"";
+      for (auto it = ctit.subtasks.begin(); it != ctit.subtasks.end(); ++it)
+      {
+        if (i == todomenu.selected+1)
+        {
+          task newtask;
+          newtask.is_note = true;
+          newtask.completed = true;
+          newtask.name = to_string(input_2.content);
+          ctit.subtasks.insert(it, newtask);
+          added=true;
+        }
+        i++;
+      }
+      if(!added) {
+        task newtask;
+        newtask.completed = true;
+        newtask.is_note = true;
+        newtask.name = to_string(input_2.content);
+        ctit.subtasks.push_back(newtask);        
+      }
       updateSelection();
+      input_2.content = L"";
+      todomenu.selected++;
+
     };
 
     menu.on_enter = [&] {
@@ -939,12 +1006,15 @@ public:
     todomenu.on_pagedown = [&] {
         task ctask = current_active_task;
         input_2.TakeFocus();
-
-        
         if(todomenu.selected == todomenu.entries.size() - 1) {
         } else{
           todomenu.selected = todomenu.entries.size()-1;
         }
+    };
+
+    todomenu.on_insert = [&] {
+        task ctask = current_active_task;
+        input_2.TakeFocus();
     };
 
     menu.on_pageup = [&] {
@@ -965,7 +1035,6 @@ public:
       input_1.TakeFocus();
       todomenu.selected = todomenu.entries.size()-1;
     };
-
 
     input_1.on_pageup = [&] {
       input_2.TakeFocus();
@@ -1233,7 +1302,7 @@ int main(int argc, const char *argv[])
       std::this_thread::sleep_for(0.3s);
       current_time = time(NULL);
 
-      if (current_time - time_at_last_todo_save > 30)
+      if (current_time - time_at_last_todo_save > 60)
       {
         save_tasks(todofile, root_task);
         save_accumulation();

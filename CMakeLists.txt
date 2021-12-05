@@ -36,3 +36,6 @@ set_target_properties(todoman PROPERTIES CXX_STANDARD 17)
 
 install(TARGETS todoman RUNTIME DESTINATION "bin")
 
+#target_compile_options(todoman PRIVATE -fsanitize=address)
+#target_link_options(todoman PRIVATE -fsanitize=address)
+	

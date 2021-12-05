@@ -27,7 +27,7 @@ A detailed to-do list could help in remembering the state in which the project w
 
 *The file "todo.md" contains a todolist that I use myself to complete this program.*
 
-See the change log at the end of this file for a list of recent changes. 
+**See the change log at the end of this file for a list of recent changes.**
 
 The timer
 =========

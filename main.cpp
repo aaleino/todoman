@@ -912,8 +912,14 @@ public:
           {
             if ((*it).subtasks.size() == 0)
             {
-              ctit.subtasks.erase(it);
-              updateSelection();
+              if(std::addressof(root_task.get()) == &ctit && ctit.subtasks.size() == 1) {
+                  annotate=true;
+                  annotation="Cannot delete the last item!";
+                  return;
+              } else { 
+                ctit.subtasks.erase(it);
+                updateSelection();
+              }
               return;
             };
           }
@@ -1097,6 +1103,7 @@ public:
     };
 
     current_active_task = _root_task;
+    root_task = _root_task;
 
     updateSelection();
     input_2.TakeFocus();
@@ -1183,6 +1190,7 @@ private:
   //  TodoSelection todoselection;
   task tmptask;
   std::reference_wrapper<task> current_active_task = tmptask;
+  std::reference_wrapper<task> root_task = tmptask;
   vector<std::reference_wrapper<task>> previous_task;
   vector<std::reference_wrapper<task>> parent_task;
 };

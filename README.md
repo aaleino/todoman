@@ -105,6 +105,10 @@ https://github.com/ArthurSonzogni/FTXUI
 Change log
 ==========
 
+10.12.2021:
+
+Support for space and 'e' -key. Pressing space one time will highlight one task/note for movement. The second press will move it to the current highlight location. Pressing 'e' allows editing the task/note.
+
 5.12.2021:
 
 Support for insert key. Pressing insert in the list will move the highlight so that it is easy to add tasks or notes between others. 

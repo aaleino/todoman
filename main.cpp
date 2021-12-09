@@ -257,6 +257,7 @@ double get_relative_size(string input)
 struct task
 {
   bool is_note;
+  bool highlighted_for_copy;
   bool completed;
   double importance;
   string name;
@@ -349,7 +350,7 @@ std::list<task> extract_tasks(vector<string> todolist)
     {
       newtask.completed = true;
     }
-
+    newtask.highlighted_for_copy = false;
     newtask.importance = get_relative_size(todolist_parsed[i][0]);
 
     if (todolist_parsed[i].size() > 1)
@@ -433,6 +434,10 @@ public:
   std::function<void()> on_pageup = []() {};
   std::function<void()> on_pagedown = []() {};
   std::function<void()> on_insert = []() {};
+
+  void maxout_cursor() {
+      cursor_position = content.size();
+  }
 
   Element Render()
   {
@@ -642,6 +647,8 @@ public:
   std::function<void()> on_pageup = []() {};
   std::function<void()> on_pagedown = []() {};
   std::function<void()> on_insert = []() {};
+  std::function<void()> on_space = []() {};
+  std::function<void()> on_edit = []() {};
 
   bool OnEvent(Event event) override {
     if(event == Event::Special("\x1b[5~")) {
@@ -650,6 +657,10 @@ public:
       on_pagedown();
     } else if(event == Event::Special("\x1b[2~")) {
       on_insert();
+    } else if(event == Event::Special(" ")) {
+      on_space();
+    } else if(event == Event::Special("e")) {
+      on_edit();
     }else {
       return  Menu::OnEvent(event);
     }
@@ -666,6 +677,10 @@ public:
     auto icon = (selected != int(i)) ? L"  " : L"> ";
     if(itemcolors.size() == entries.size() && itemcolors[i] == 1) {
       elements.push_back(text(icon + entries[i]) | color(Color::GreenLight) | style | focused);
+    } else if(itemcolors.size() == entries.size() && itemcolors[i] == 2) {
+      elements.push_back(text(icon + entries[i]) | bgcolor(Color::YellowLight) | style | focused);
+    } else if(itemcolors.size() == entries.size() && itemcolors[i] == 3) {
+      elements.push_back(text(icon + entries[i]) | bgcolor(Color::YellowLight) | color(Color::GreenLight) | style | focused);
     } else {
       elements.push_back(text(icon + entries[i]) | style | focused);
     }
@@ -685,7 +700,8 @@ public:
   {
     input_1.set_colormode(1);
     input_2.set_colormode(2);
-
+    move_mode= false;
+    edit_mode = false;
     Add(&maincontainer);
     maincontainer.Add(&container);
 
@@ -728,6 +744,15 @@ public:
 
     input_1.on_enter = [&] {
       int i = 0;
+      if(edit_mode) {
+        (*edittask).name = to_string(input_1.content);
+        edit_mode=false;
+        input_1.content = L"";
+    
+        updateSelection();
+        todomenu.TakeFocus();
+        return;
+      }
 
       task &ctit = current_active_task; 
 /*
@@ -745,6 +770,8 @@ public:
           task newtask;
           newtask.is_note = false;
           newtask.completed = false;
+          newtask.highlighted_for_copy = false;
+
           newtask.name = to_string(input_1.content);
           ctit.subtasks.insert(it, newtask);
           added=true;
@@ -756,15 +783,24 @@ public:
         newtask.completed = false;
         newtask.is_note = false;
         newtask.name = to_string(input_1.content);
+        newtask.highlighted_for_copy = false;
         ctit.subtasks.push_back(newtask);        
       }
-      updateSelection();
       todomenu.selected++;
       input_1.content = L"";
-//        updateSelection();
+      updateSelection();
     };
 
     input_2.on_enter = [&] {
+      if(edit_mode) {
+        (*edittask).name = to_string(input_2.content);
+        input_2.content = L"";
+        updateSelection();
+        todomenu.TakeFocus();
+        edit_mode=false;
+        return;
+      }
+
       int i = 0;
       bool added = false;
       task &ctit = current_active_task;
@@ -775,6 +811,7 @@ public:
           task newtask;
           newtask.is_note = true;
           newtask.completed = true;
+          newtask.highlighted_for_copy = false;
           newtask.name = to_string(input_2.content);
           ctit.subtasks.insert(it, newtask);
           added=true;
@@ -785,6 +822,7 @@ public:
         task newtask;
         newtask.completed = true;
         newtask.is_note = true;
+        newtask.highlighted_for_copy = false;
         newtask.name = to_string(input_2.content);
         ctit.subtasks.push_back(newtask);        
       }
@@ -850,6 +888,7 @@ public:
             task newtask;
             newtask.is_note = false;
             newtask.completed = false;
+            newtask.highlighted_for_copy = false;
             newtask.name = to_string(input_1.content);
             ctit.subtasks.insert(it, newtask);
           }
@@ -867,6 +906,7 @@ public:
           {
             task newtask;
             newtask.is_note = true;
+            newtask.highlighted_for_copy = false;
             // all notes must be completed
             newtask.completed = true;
             newtask.name = to_string(input_2.content);
@@ -1018,8 +1058,74 @@ public:
         }
     };
 
+    todomenu.on_edit = [&] {
+        // take focus
+
+      edit_mode = true;
+      // copy the content of the selected task to the input field
+      int i = 0;
+      task &ctit = current_active_task;
+      for (auto it = ctit.subtasks.begin(); it != ctit.subtasks.end(); ++it)
+      {
+        if (i == todomenu.selected)
+        {
+          if((*it).is_note) {
+            input_2.content = to_wstring((*it).name);
+            input_2.maxout_cursor();
+            input_2.TakeFocus();
+
+          } else {
+            input_1.content = to_wstring((*it).name);
+            input_1.maxout_cursor();
+            input_1.TakeFocus();
+          }
+          edittask = it;
+          break;
+        }
+        i++;
+      }
+      updateSelection();
+    };
+
+    todomenu.on_space = [&] {
+        if(!move_mode) {
+          move_mode =true;
+          task &ctit = current_active_task;
+          int i = 0;
+          for (auto it = ctit.subtasks.begin(); it != ctit.subtasks.end(); ++it)
+          {
+            if (i == todomenu.selected)
+            {
+              (*it).highlighted_for_copy = true;
+              fromtask = it;
+            }
+            i++;
+          }
+        } else {
+          move_mode = false;
+          task &ctit = current_active_task;
+
+          int i = 0;
+          for (auto it = ctit.subtasks.begin(); it != ctit.subtasks.end(); ++it)
+          {
+            if (i == todomenu.selected)
+            {
+              totask = it;
+            }
+            i++;
+          } 
+          (*fromtask).highlighted_for_copy = false;
+          if(fromtask != totask) {
+            std::swap(*fromtask, *totask);
+          }
+        }
+        updateSelection();
+      //  input_2.TakeFocus();
+    };
+
+
     todomenu.on_insert = [&] {
-        task ctask = current_active_task;
+        //task ctask = current_active_task;
         input_2.TakeFocus();
     };
 
@@ -1139,7 +1245,12 @@ public:
     {
       wstring taskname;
       if(!task.is_note) {
-        colors.push_back(0);
+          if(task.highlighted_for_copy) {
+            colors.push_back(2);
+          } else {
+            colors.push_back(0);
+          }
+
         if (task.completed)
         {
           taskname = checked;
@@ -1149,7 +1260,11 @@ public:
           taskname = unchecked;
         }
       } else {
-          colors.push_back(1);
+          if(task.highlighted_for_copy) {
+            colors.push_back(3);
+          } else {
+            colors.push_back(1);
+          }
           taskname = to_wstring("  - ");
       }
       taskname += to_wstring(task.name);
@@ -1193,6 +1308,13 @@ private:
   std::reference_wrapper<task> root_task = tmptask;
   vector<std::reference_wrapper<task>> previous_task;
   vector<std::reference_wrapper<task>> parent_task;
+
+  bool move_mode;
+  std::list<task>::iterator fromtask;
+  std::list<task>::iterator totask;
+  bool edit_mode;
+  std::list<task>::iterator edittask;
+
 };
 
 bool count_uncompleted_tasks(task &task)

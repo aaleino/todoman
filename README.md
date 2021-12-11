@@ -107,7 +107,7 @@ Change log
 
 11.12.2021:
 
-Support for space and 'e' -key. Pressing space one time will highlight one task/note for movement. The second press will swap the note at the current highlight location with the previously highlighted one. Pressing 'e' allows editing the task/note.
+Support for space and 'e' -key. Pressing space one time will highlight one task/note for movement. The second press will move the note below the current highlight location. Pressing 'e' allows editing the task/note.
 
 5.12.2021:
 

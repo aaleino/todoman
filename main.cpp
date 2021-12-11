@@ -1122,6 +1122,7 @@ public:
             newtask.is_note = (*fromtask).is_note;
             newtask.highlighted_for_copy = false;
             newtask.subtasks = (*fromtask).subtasks;
+            newtask.completed = (*fromtask).completed;
 
             ctit.subtasks.push_back(newtask);
             task &mit = active_task_for_move;
@@ -1138,6 +1139,7 @@ public:
             newtask.name = (*fromtask).name;
             newtask.is_note = (*fromtask).is_note;
             newtask.highlighted_for_copy = false;
+            newtask.completed = (*fromtask).completed;
             newtask.subtasks = (*fromtask).subtasks;
            // (*totask).subtasks.push_back(newtask);
            // (*fromtask).subtasks.clear();

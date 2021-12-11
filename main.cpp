@@ -1098,25 +1098,55 @@ public:
             {
               (*it).highlighted_for_copy = true;
               fromtask = it;
+              active_task_for_move = current_active_task;
             }
             i++;
           }
         } else {
           move_mode = false;
           task &ctit = current_active_task;
-
+          bool found = false;
           int i = 0;
           for (auto it = ctit.subtasks.begin(); it != ctit.subtasks.end(); ++it)
           {
-            if (i == todomenu.selected)
+            if (i == todomenu.selected+1)
             {
               totask = it;
+              found = true;
             }
             i++;
           } 
+          if(!found) {
+            task newtask;
+            newtask.name = (*fromtask).name;
+            newtask.is_note = (*fromtask).is_note;
+            newtask.highlighted_for_copy = false;
+            newtask.subtasks = (*fromtask).subtasks;
+
+            ctit.subtasks.push_back(newtask);
+            task &mit = active_task_for_move;
+            mit.subtasks.erase(fromtask);
+
+            (*fromtask).highlighted_for_copy = false;
+            updateSelection();
+            return;
+          }
           (*fromtask).highlighted_for_copy = false;
           if(fromtask != totask) {
-            std::swap(*fromtask, *totask);
+            // create a new task and copy the content
+            task newtask;
+            newtask.name = (*fromtask).name;
+            newtask.is_note = (*fromtask).is_note;
+            newtask.highlighted_for_copy = false;
+            newtask.subtasks = (*fromtask).subtasks;
+           // (*totask).subtasks.push_back(newtask);
+           // (*fromtask).subtasks.clear();
+            ctit.subtasks.insert(totask, newtask);
+            // delete the old task
+            task &mit = active_task_for_move;
+            mit.subtasks.erase(fromtask);
+
+//            std::swap(*fromtask, *totask);
           }
         }
         updateSelection();
@@ -1305,6 +1335,7 @@ private:
   //  TodoSelection todoselection;
   task tmptask;
   std::reference_wrapper<task> current_active_task = tmptask;
+
   std::reference_wrapper<task> root_task = tmptask;
   vector<std::reference_wrapper<task>> previous_task;
   vector<std::reference_wrapper<task>> parent_task;
@@ -1312,6 +1343,8 @@ private:
   bool move_mode;
   std::list<task>::iterator fromtask;
   std::list<task>::iterator totask;
+  std::reference_wrapper<task> active_task_for_move = tmptask;
+
   bool edit_mode;
   std::list<task>::iterator edittask;
 

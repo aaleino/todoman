@@ -2057,7 +2057,7 @@ int main(int argc, const char *argv[])
       }
       cout << "Metadata is used to save timer information in the todo file." << endl;
       cout << "Without metadata, settings and time accumulation cannot restored after quitting the program." << endl;
-      cout << "You can erase all metadata from the file later using the \"-d\" option." << endl;
+      cout << "You can erase all metadata from the file later using the \"-e\" option." << endl;
       cout << "" << endl << endl;
       cout << "Do you want to add the metadata (recommended)? (y/n)" << endl;
       string answer;

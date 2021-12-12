@@ -513,6 +513,26 @@ void update_parents(task &task)
     update_parents(subtask);
   }
 }
+std::pair <int, int> get_total_time(task &task) {
+  int total_session_time = 0;
+  int total_total_time = 0;
+  if (task.subtasks.size() > 0) {
+    for (auto &ctask : task.subtasks) {
+      std::pair <int, int> tmp = get_total_time(ctask);
+      total_session_time += tmp.first;
+      total_total_time += tmp.second;
+    }
+  } 
+  if (task.metadata.find(SESSION_TIME) != task.metadata.end()) {
+    total_session_time += stoi(task.metadata[SESSION_TIME]);
+  }
+  if (task.metadata.find(ACCUMULATED_TIME) != task.metadata.end()) {
+    total_total_time += stoi(task.metadata[ACCUMULATED_TIME]);
+  }
+  
+  return std::make_pair(total_session_time, total_total_time);
+}
+
 
 
 void save_tasks(string filename, task &task)
@@ -1080,6 +1100,28 @@ public:
                   annotation="Cannot delete the last item!";
                   return;
               } else { 
+                // deposit times into parent
+                update_parents(ctit);
+                // get total time spent on this task
+                auto totaltime=get_total_time((*it));
+                // deposit time into parent
+                if(use_metadata) {
+                  // if parent has ACCUMULATED_TIME metadata, add to it
+                  if(ctit.metadata.find(ACCUMULATED_TIME) != ctit.metadata.end()) {
+                    int old_time = stoi(ctit.metadata[ACCUMULATED_TIME]);
+                    ctit.metadata[ACCUMULATED_TIME] = to_string(old_time + totaltime.second);
+                  } else {
+                    // if parent does not have metadata, add it
+                    ctit.metadata[ACCUMULATED_TIME] = to_string(totaltime.second);
+                  }
+                  // same for SESSION_TIME
+                  if(ctit.metadata.find(SESSION_TIME) != ctit.metadata.end()) {
+                    int old_time = stoi(ctit.metadata[SESSION_TIME]);
+                    ctit.metadata[SESSION_TIME] = to_string(old_time + totaltime.first);
+                  } else {
+                    ctit.metadata[SESSION_TIME] = to_string(totaltime.first);
+                  }
+                }
                 ctit.subtasks.erase(it);
                 updateSelection();
               }
@@ -1732,25 +1774,6 @@ string format_percentage(double percentage) {
   return ss.str();
 }
 
-std::pair <int, int> get_total_time(task &task) {
-  int total_session_time = 0;
-  int total_total_time = 0;
-  if (task.subtasks.size() > 0) {
-    for (auto &ctask : task.subtasks) {
-      std::pair <int, int> tmp = get_total_time(ctask);
-      total_session_time += tmp.first;
-      total_total_time += tmp.second;
-    }
-  } 
-  if (task.metadata.find(SESSION_TIME) != task.metadata.end()) {
-    total_session_time += stoi(task.metadata[SESSION_TIME]);
-  }
-  if (task.metadata.find(ACCUMULATED_TIME) != task.metadata.end()) {
-    total_total_time += stoi(task.metadata[ACCUMULATED_TIME]);
-  }
-  
-  return std::make_pair(total_session_time, total_total_time);
-}
 
 // print statistics
 void print_statistics(task &task, bool isroot, bool session_only)

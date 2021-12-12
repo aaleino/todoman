@@ -749,8 +749,17 @@ public:
   }
   Element Render() override
   {
+    string timetitle = "";
+    if(time_title.size() < 2)
+    {
+      timetitle = time_title;
+    }
+    else
+    {
+      timetitle = "(" + time_title + ")";
+    }
     return window(text(L"Summary"),
-                  vbox({text(to_wstring(work_task_title + " (" + time_title +")")), separator(), RenderGauge(1) | color(curcol),
+                  vbox({text(to_wstring(work_task_title + timetitle)), separator(), RenderGauge(1) | color(curcol),
                         separator(), RenderGauge(2) | color(dprogcol)}));
   };
   Color curcol = Color::BlueLight;

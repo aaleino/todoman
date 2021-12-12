@@ -37,6 +37,7 @@ The pause timer is automatically on.
 
 Once you start working on any item, the program will count the time towards a goal that can be set at command line (see *Usage*).
 The progress is shown in percentages:  (Current duration) / (Target time) * 100%
+Additionally, the total time spent on each task is stored. This data can be viewed using "-s 0" or "-s 1" options. 
 
 If you change the task before the timer has been completed, the work timer will not reset. It will reset **only when** you press "stop working".
 If task time tracking is used, the time worked so far will be deposited to the previous task.

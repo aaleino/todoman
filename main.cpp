@@ -1791,20 +1791,27 @@ void print_statistics(task &task, bool isroot, bool session_only)
   auto total_time = get_total_time(task);
   int alltime = total_time.second;
   int sessiontime = total_time.first;
-  if(isroot) {
-     string ses;
-     if(session_only) {
-        ses = "Session";
-     } else {
-        ses = "All time";
-     }
-//     cout << "[Task name] [Time used in working session] [Time used all time]" << endl;      
-     cout << "=============== "<< ses << " summary for all tasks ================" << endl;
+  string title;
+  string ses;
+  if(session_only) {
+    ses = "Session";
   } else {
-     cout << "**Subsummary for task " << task.name << "**" <<endl;
+    ses = "All time";
+  }
+
+  if(isroot) {
+//     cout << "[Task name] [Time used in working session] [Time used all time]" << endl;
+
+     title= "=============== " + ses + " summary ================";
+     cout << title << endl;
+  } else {
+     title= "--------------- " + ses + " summary for subtask: " + task.name + "------------------";
+      cout << title << endl;
+
+//     cout << "---------------  for task " << task.name << " ------ " <<endl;
   }
   if(!session_only) {
-    cout << "All time total: " << alltime << " seconds => " << format_time_diff(alltime) << endl;
+    cout << "All tasks: " << format_time_diff(alltime) << endl;
   } else {
     cout << "Session time total: " << sessiontime << " seconds => " << format_time_diff(get_total_time(task).first) << endl;
   }
@@ -1833,7 +1840,6 @@ void print_statistics(task &task, bool isroot, bool session_only)
       task_stat.percent_time_session = (double)tmp.first / (double)sessiontime;
       task_stat.percent_time_all = (double)tmp.second / (double)alltime;
       task_stat_list.push_back(task_stat);
-      print_statistics(ctask, false, session_only);
     }    
   }
   if(session_only) {
@@ -1858,11 +1864,24 @@ void print_statistics(task &task, bool isroot, bool session_only)
     }
 
    }
-  if(isroot) {
-    cout << "===============================================================" << endl;
-  } else {
-    cout << "**End of subtask summary**" << endl;
-  }
+   if(isroot) {
+     // repeat '=' for the length of the title
+      for(int i = 0; i < title.length(); i++) {
+        cout << "=";
+      }
+      cout << "\n";
+   } else {
+      for(int i = 0; i < title.length(); i++) {
+        cout << "-";
+      }
+      cout << "\n";
+   }
+    for (auto &ctask : task.subtasks)
+    {
+       if(ctask.subtasks.size() > 0) {
+          print_statistics(ctask, false, session_only);
+       }
+    }
 }
 
 int main(int argc, const char *argv[])

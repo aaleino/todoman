@@ -103,7 +103,7 @@ Example:
 Open todo.md for editing, use default intervals (40 min work 5 min pause)
 
 Use up, down, right, left, enter, pgup and pgdown in the menu to navigate. 
-Use 'space' to move note, 'insert' to put note between notes and 'e' to edit note. 
+Use 'space' to move note/task, 'insert' to create one between others and 'e' to edit one. 
 
 	./todoman todo.md -t 40 10
 

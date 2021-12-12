@@ -1879,7 +1879,17 @@ void print_statistics(task &task, bool isroot, bool session_only)
     for (auto &ctask : task.subtasks)
     {
        if(ctask.subtasks.size() > 0) {
-          print_statistics(ctask, false, session_only);
+          auto tmp = get_total_time(ctask);
+          if(session_only) {
+            if(tmp.first > 0) {
+              print_statistics(ctask, false, session_only);
+            }
+          } else {
+            if(tmp.second > 0) {
+              print_statistics(ctask, false, session_only);
+            }
+          }
+          
        }
     }
 }

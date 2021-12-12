@@ -533,6 +533,29 @@ std::pair <int, int> get_total_time(task &task) {
   return std::make_pair(total_session_time, total_total_time);
 }
 
+std::pair <int, int> get_total_time_in_subtasks(task &task, bool root) {
+  int total_session_time = 0;
+  int total_total_time = 0;
+  if (task.subtasks.size() > 0) {
+    for (auto &ctask : task.subtasks) {
+      std::pair <int, int> tmp = get_total_time(ctask);
+      total_session_time += tmp.first;
+      total_total_time += tmp.second;
+    }
+  } 
+  if (task.metadata.find(SESSION_TIME) != task.metadata.end()) {
+    if(!root) {
+      total_session_time += stoi(task.metadata[SESSION_TIME]);
+    }
+  }
+  if (task.metadata.find(ACCUMULATED_TIME) != task.metadata.end()) {
+    if(!root) {
+      total_total_time += stoi(task.metadata[ACCUMULATED_TIME]);
+    }
+  }  
+  return std::make_pair(total_session_time, total_total_time);
+}
+
 
 
 void save_tasks(string filename, task &task)
@@ -1879,7 +1902,7 @@ void print_statistics(task &task, bool isroot, bool session_only)
     for (auto &ctask : task.subtasks)
     {
        if(ctask.subtasks.size() > 0) {
-          auto tmp = get_total_time(ctask);
+          auto tmp = get_total_time_in_subtasks(ctask,true);
           if(session_only) {
             if(tmp.first > 0) {
               print_statistics(ctask, false, session_only);

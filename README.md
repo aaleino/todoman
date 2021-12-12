@@ -73,7 +73,7 @@ Tested in WSL+Windows terminal, Ubuntu+default terminal
 
 Usage
 =====
-
+```
 Usage: ./todoman <filename.md> <options>
 Options:
 -t <tasktime> <pausetime> <worktime>
@@ -90,10 +90,10 @@ Options:
    generate a time usage report from the file
 
    option: set to "1" for session statistics, "0" for all time statistics
+```
 
 Metadata contains information on how much time has been spent on a task and other state varibles. 
 It will be stored into the file enclosed between '<!-- ^ ' and ' ^--!>'.
-
 
 Example:
 

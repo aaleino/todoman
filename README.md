@@ -117,7 +117,7 @@ Restart working time.
 
 	./todoman todo.md -s 1
 
-Generate report on how much time were spent on each task during the current session.
+Generate report on the time spent on each task during the current session (use -s 0 for a report about all sessions).
 
 
 Credits

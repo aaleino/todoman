@@ -1,6 +1,6 @@
 # Todo manager
 
-This program makes todo lists easily readable and editable and helps to divide tasks into subtasks. It also helps to track time. 
+This program makes todo lists easily readable and editable and helps to divide tasks into subtasks. It also tracks the time spent on each task. 
 This is an experimental hobby project that is under construction.
 
 Demo
@@ -23,7 +23,8 @@ Explanation: "Work" was converted to a project, and it contains subitems. "Hobby
 Reading long to-do lists can be daunting. The file may grow long but should be relatively easy to read with the program if enough projects (subtasks) are used.  
 
 My vision is the program will allow users to create very detailed to-do lists and help them to organize large and more abstract tasks.
-A detailed to-do list could help in remembering the state in which the project was left last time.
+A detailed to-do list could help in remembering the state in which the project was left last time. 
+Time tracking could help to identify bottlenecks in the daily routine and check if resources were allocated correctly.
 
 *The file "todo.md" contains a todolist that I use myself to complete this program.*
 
@@ -38,6 +39,7 @@ Once you start working on any item, the program will count the time towards a go
 The progress is shown in percentages:  (Current duration) / (Target time) * 100%
 
 If you change the task before the timer has been completed, the work timer will not reset. It will reset **only when** you press "stop working".
+If task time tracking is used, the time worked so far will be deposited to the previous task.
 
 The 'daily accumulation' counter increases **only when** working on a task. It will keep on increasing also after task progress reaches 100%.
 
@@ -72,26 +74,51 @@ Tested in WSL+Windows terminal, Ubuntu+default terminal
 Usage
 =====
 
+Usage: ./todoman <filename.md> <options>
+Options:
+-t <tasktime> <pausetime> <worktime>
+   tasktime: time in minutes to complete a task
+   pausetime: time in minutes to pause between tasks
+   worktime: time in hours to work on a task
+   These options are automatically stored into the metadata of the file.
+-v print version
+-h print help
+-r reset session
+-e erase metadata (erases all timer information from the file and quits. Does a full timer/setting reset.)
+-d disable metadata (disables storing timer information to the file. Erases existing timer information from the file.)
+-s <option>
+   generate a time usage report from the file
+
+   option: set to "1" for session statistics, "0" for all time statistics
+
+Metadata contains information on how much time has been spent on a task and other state varibles. 
+It will be stored into the file enclosed between '<!-- ^ ' and ' ^--!>'.
+
 
 Example:
 
 	./todoman todo.md
 
-Open todo.md for editing, use default intervals (25 min work 5 min pause)
+Open todo.md for editing, use default intervals (40 min work 5 min pause)
 
-Use up, down, right, left, pgup, pgdown and enter in the menu to navigate. 
+Use up, down, right, left, enter, pgup, pgdown, insert and 'e' in the menu to navigate. 
 
-	./todoman todo.md 40 10
+	./todoman todo.md -t 40 10
 
 Open todo.md for editing, use 40 minute interval for work, 10 minute interval for pause
 
-	./todoman todo.md 40 10 7.25
+	./todoman todo.md -t 40 10 7.25
 
 As above, but set total working time goal as 7.25h
 
-	./todoman todo.md 40 10 7.25 restart
+	./todoman todo.md -r
 
-As above, but restart working time.
+Restart working time.
+
+	./todoman todo.md -s 1
+
+Generate report on how much time were spent on each task during the current session.
+
 
 Credits
 =======
@@ -104,6 +131,10 @@ https://github.com/ArthurSonzogni/FTXUI
 
 Change log
 ==========
+
+12.12.2021:
+
+Major changes related to time tracking. The program now allows tracking time and storing settings in the edited file. Beware of bugs!!
 
 11.12.2021:
 

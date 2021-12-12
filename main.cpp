@@ -1,3 +1,6 @@
+// version string
+#define VERSION "0.5.0"
+
 /*
 MIT License
 
@@ -30,6 +33,24 @@ SOFTWARE.
 #include <thread>
 #include <vector>
 #include <time.h>
+//strcmp
+#include <cstring>
+//map
+#include <map>
+#include <sstream>
+//isnan
+#include <cmath>
+
+// setprecision
+#include <iomanip>
+
+#define ACCUMULATED_TIME "at"
+#define SESSION_TIME "st"
+#define PAUSE_STAMP "ps"
+
+#define TASK_TIME "tasktime"
+#define PAUSE_TIME "pausetime"
+#define WORK_TIME "worktime"
 
 #include "ftxui/component/button.hpp"
 #include "ftxui/component/checkbox.hpp"
@@ -47,28 +68,34 @@ time_t current_time;
 bool working_on_a_task = false;
 time_t accumulated_time = 0;
 time_t time_at_task_start, time_at_task_stop;
+int elsetime = 0;
 
-double tasktime = 60 * 25;
+double tasktime = 60 * 40;
 double worktime = 26100;
 double pausetime = 60 * 5;
 
 std::ofstream logfile;
 
 std::string work_task_title = "Currently not working on a task";
-
+std::string time_title;
 std::string saved_message;
 bool annotate = false;
 bool annotation_begins = true;
 time_t annotation_start;
 std::string annotation;
 
-std::string accumulated_time_filename = "temp_accumulated_time.txt";
-
 using namespace ftxui;
 using namespace std;
 
 using convert_t = std::codecvt_utf8<wchar_t>;
 std::wstring_convert<convert_t, wchar_t> strconverter;
+
+bool use_metadata = true;
+
+// define metadata starting and ending string
+std::string meta_start_string = "<!-- ^ ";
+std::string meta_end_string = " ^--!>"; 
+std::map <string, string> metadata;
 
 std::string to_string(std::wstring wstr)
 {
@@ -105,11 +132,19 @@ inline bool file_exists(const std::string &name)
 vector<string> read_lines(string filename)
 {
   vector<string> values;
-  ifstream infile(filename.c_str());
+  ifstream infile(filename.c_str(), ios::in);
   string line;
-  while (getline(infile, line))
+  if(use_metadata) {
+    // skip metadata
+    getline(infile, line);
+  }
+
+  while (!infile.eof())
   {
-    values.push_back(line);
+    getline(infile, line);
+    if(line.length() > 0) {
+      values.push_back(line);
+    }
   }
   if (infile.is_open())
     infile.close();
@@ -140,6 +175,37 @@ bool line_is_empty(string line)
     return false;
   }
   return true;
+}
+
+// erase substring from string
+void erase_substring(std::string &str, const std::string &sub)
+{
+  size_t start = str.find(sub);
+  if (start != std::string::npos)
+  {
+    str.erase(start, sub.length());
+  }
+}
+// erase everything between two strings
+void erase_between(std::string &str, const std::string &sub1, const std::string &sub2)
+{
+  size_t start = str.find(sub1);
+  size_t end = str.find(sub2);
+  if (start != std::string::npos && end != std::string::npos)
+  {
+    str.erase(start, end - start + sub2.length());
+  }
+}
+// erase everything unless between two strings
+void erase_unless_between(std::string &str, const std::string &sub1, const std::string &sub2)
+{
+  size_t start = str.find(sub1);
+  size_t end = str.find(sub2);
+  if (start != std::string::npos && end != std::string::npos)
+  {
+    str.erase(end, str.length());
+    str.erase(0, start + sub1.length());
+  }
 }
 
 // this returns the tasks in a two dimensional array so that the tasks on this
@@ -260,9 +326,13 @@ struct task
   bool highlighted_for_copy;
   bool completed;
   double importance;
+
   string name;
   string comment;
   std::list<task> subtasks;
+  // parent task
+  task *parent;
+  std::map <string, string> metadata;
 };
 
 string remove_whitespace(string input)
@@ -336,7 +406,27 @@ std::list<task> extract_tasks(vector<string> todolist)
   for (int i = 0; i < todolist_parsed.size(); i++)
   {
     task newtask;
+    if(use_metadata)
+    {
+        string line=todolist_parsed[i][0];
+        if (line.find(meta_start_string) != std::string::npos && line.find(meta_end_string) != std::string::npos) {
+          // remove marker
+          string metadata = line;
+          erase_between(line, meta_start_string, meta_end_string);
+          erase_unless_between(metadata, meta_start_string, meta_end_string);
 
+          // read words from the line into variable value pairs
+            std::istringstream iss(metadata);
+            std::string key, value;
+            while (iss >> key >> value) {
+                newtask.metadata[key] = value;
+                //cout << metadata << "\n";
+            } 
+        } else {
+          // task does not contain metadata
+        }
+        todolist_parsed[i][0] = line;
+    }
     newtask.name = trim_to_title(remove_whitespace(todolist_parsed[i][0]));
 
     newtask.is_note = check_if_note(remove_whitespace(todolist_parsed[i][0]));
@@ -390,8 +480,22 @@ void print_task_rec(ofstream &file, task &task, int level)
       file << "- [ ] ";
     }
   }
+  file << task.name;
+  // write metadata
+  if(use_metadata)
+  {
+    // if there is metadata, write it
+    if(task.metadata.size() > 0) {
+      file << meta_start_string;
+      for(auto it = task.metadata.begin(); it != task.metadata.end(); it++)
+      {
+        file << it->first << " " << it->second << " ";
+      }
+      file << meta_end_string;
+    }
+  }
 
-  file << task.name << "\n";
+  file << "\n";
 
   for (auto subtask : task.subtasks)
   {
@@ -400,10 +504,30 @@ void print_task_rec(ofstream &file, task &task, int level)
   return;
 }
 
+void update_parents(task &task)
+{
+  task.parent = nullptr;
+  for (auto subtask : task.subtasks)
+  {
+    subtask.parent = &task;
+    update_parents(subtask);
+  }
+}
+
+
 void save_tasks(string filename, task &task)
 {
   ofstream myfile;
   myfile.open(filename);
+  if(use_metadata)
+  {
+    myfile << meta_start_string;
+    for(auto &pair : metadata)
+    {
+      myfile << pair.first << " " << pair.second << " ";
+    }
+    myfile << meta_end_string;
+  }
   print_task_rec(myfile, task, 0);
   myfile.close();
   return;
@@ -606,27 +730,13 @@ public:
   Element Render() override
   {
     return window(text(L"Summary"),
-                  vbox({text(to_wstring(work_task_title)), separator(), RenderGauge(1) | color(curcol),
+                  vbox({text(to_wstring(work_task_title + " (" + time_title +")")), separator(), RenderGauge(1) | color(curcol),
                         separator(), RenderGauge(2) | color(dprogcol)}));
   };
   Color curcol = Color::BlueLight;
   Color dprogcol = Color::GrayDark;
 };
 
-void save_accumulation()
-{
-  std::ofstream accfile(accumulated_time_filename, ios::out);
-  if (working_on_a_task)
-  {
-    accfile << accumulated_time + (time(NULL) - time_at_task_start);
-    accfile.close();
-  }
-  else
-  {
-    accfile << accumulated_time;
-    accfile.close();
-  }
-}
 
 void put_to_log(string entry)
 {
@@ -748,7 +858,6 @@ public:
         (*edittask).name = to_string(input_1.content);
         edit_mode=false;
         input_1.content = L"";
-    
         updateSelection();
         todomenu.TakeFocus();
         return;
@@ -771,9 +880,13 @@ public:
           newtask.is_note = false;
           newtask.completed = false;
           newtask.highlighted_for_copy = false;
-
+          if(use_metadata) {
+           // newtask.metadata[ACCUMULATED_TIME] = to_string(0);
+           // newtask.metadata[SESSION_TIME] = to_string(0);
+          }
           newtask.name = to_string(input_1.content);
           ctit.subtasks.insert(it, newtask);
+
           added=true;
         }
         i++;
@@ -784,6 +897,11 @@ public:
         newtask.is_note = false;
         newtask.name = to_string(input_1.content);
         newtask.highlighted_for_copy = false;
+        if(use_metadata) {
+        //  newtask.metadata[ACCUMULATED_TIME] = to_string(0);
+        //  newtask.metadata[SESSION_TIME] = to_string(0);
+        }
+
         ctit.subtasks.push_back(newtask);        
       }
       todomenu.selected++;
@@ -795,6 +913,11 @@ public:
       if(edit_mode) {
         (*edittask).name = to_string(input_2.content);
         input_2.content = L"";
+    /*
+        if(use_metadata) {
+          (*edittask).metadata[ACCUMULATED_TIME] = to_string(0);
+        }
+    */
         updateSelection();
         todomenu.TakeFocus();
         edit_mode=false;
@@ -970,6 +1093,9 @@ public:
       {
         int i = 0;
         task &ctit = current_active_task;
+        // store previous active_task
+        std::list<task>::iterator prev_active = active_task;
+
         for (auto it = ctit.subtasks.begin(); it != ctit.subtasks.end(); ++it)
         {
           if (i == todomenu.selected)
@@ -980,6 +1106,7 @@ public:
               return;
             }
             work_task_title = (*it).name;
+            active_task = it;
             break;
           }
           i++;
@@ -1015,10 +1142,31 @@ public:
         if (working_on_a_task)
         {
           put_to_log("Switched task to " + work_task_title);
+          if(use_metadata) {
+            // bank the accumulated time to the previous task
+            time_t time_add = time(NULL) - time_at_task_start - elsetime;
+            // if metadata has ACCUMULATED_TIME
+            int prevacc=0;
+            if((*prev_active).metadata.find("ACCUMULATED_TIME") != (*prev_active).metadata.end()) {
+              prevacc=stoi((*prev_active).metadata[ACCUMULATED_TIME]);
+            }
+            prevacc+=time_add;
+            (*prev_active).metadata[ACCUMULATED_TIME]=to_string(prevacc);
+
+            int prevsacc=0;
+            if((*prev_active).metadata.find(SESSION_TIME) != (*prev_active).metadata.end()) {
+              prevsacc=stoi((*prev_active).metadata[SESSION_TIME]);
+            }
+            prevsacc+=time_add;
+            (*prev_active).metadata[SESSION_TIME]=to_string(prevsacc);
+            // store how much time has been banked elsewhere
+            elsetime+=time_add;
+          }
         }
         else
         {
           // start working on a task
+          elsetime = 0;
           put_to_log("Started a working session. First task " + work_task_title);
           working_on_a_task = true;
           time_at_task_start = time(NULL);
@@ -1031,7 +1179,30 @@ public:
           work_task_title = "Currently not working on a task";
           time_at_task_stop = time(NULL);
           working_on_a_task = false;
-          accumulated_time += time(NULL) - time_at_task_start;
+          time_t time_add = time(NULL) - time_at_task_start;
+          accumulated_time += time_add;
+
+          if(use_metadata) {
+            // check if medata contains accumulated time
+            int saved_time=0;
+            if((*active_task).metadata.find(ACCUMULATED_TIME) != (*active_task).metadata.end()) {
+              saved_time=stoi((*active_task).metadata[ACCUMULATED_TIME]);
+            } 
+
+            int saved_stime=0;
+            if((*active_task).metadata.find(SESSION_TIME) != (*active_task).metadata.end()) {
+              saved_stime=stoi((*active_task).metadata[SESSION_TIME]);
+            } 
+
+            metadata[ACCUMULATED_TIME] = to_string(accumulated_time);
+            metadata[PAUSE_STAMP] = to_string(time_at_task_start);
+            // write accumulated time to the task
+
+            (*active_task).metadata[ACCUMULATED_TIME] = to_string(saved_time+time_add-elsetime);
+            (*active_task).metadata[SESSION_TIME] = to_string(saved_stime+time_add-elsetime);
+
+            elsetime = 0;
+          }
           put_to_log("Ended working session. Total time " +
                     to_string((time(NULL) - time_at_task_start) / 60.0f) + " minutes.");
           put_to_log("Daily accumulation " + to_string(accumulated_time) +
@@ -1041,6 +1212,36 @@ public:
 
       if (menu.selected == 8)
       {
+        if(working_on_a_task == true) {
+          work_task_title = "Currently not working on a task";
+          time_at_task_stop = time(NULL);
+          working_on_a_task = false;
+          time_t time_add = time(NULL) - time_at_task_start;
+          accumulated_time += time_add;
+          if(use_metadata) {
+            int saved_time=0;
+            if((*active_task).metadata.find(ACCUMULATED_TIME) != (*active_task).metadata.end()) {
+              saved_time=stoi((*active_task).metadata[ACCUMULATED_TIME]);
+            }
+            int saved_stime=0;
+            if((*active_task).metadata.find(SESSION_TIME) != (*active_task).metadata.end()) {
+              saved_stime=stoi((*active_task).metadata[SESSION_TIME]);
+            }
+
+            metadata[ACCUMULATED_TIME] = to_string(accumulated_time);
+            metadata[PAUSE_STAMP] = to_string(time_at_task_start);
+            // write accumulated time to the task
+
+            (*active_task).metadata[ACCUMULATED_TIME] = to_string(saved_time+time_add-elsetime);
+            (*active_task).metadata[SESSION_TIME] = to_string(saved_stime+time_add-elsetime);
+
+            elsetime = 0;
+          }
+          put_to_log("Ended working session. Total time " +
+                    to_string((time(NULL) - time_at_task_start) / 60.0f) + " minutes.");
+          put_to_log("Daily accumulation " + to_string(accumulated_time) +
+                    " seconds.");
+        }
         on_quit();
       }
     };
@@ -1123,6 +1324,9 @@ public:
             newtask.highlighted_for_copy = false;
             newtask.subtasks = (*fromtask).subtasks;
             newtask.completed = (*fromtask).completed;
+            if(use_metadata) {
+              newtask.metadata = (*fromtask).metadata;
+            }
 
             ctit.subtasks.push_back(newtask);
             task &mit = active_task_for_move;
@@ -1141,6 +1345,9 @@ public:
             newtask.highlighted_for_copy = false;
             newtask.completed = (*fromtask).completed;
             newtask.subtasks = (*fromtask).subtasks;
+            if(use_metadata) {
+              newtask.metadata = (*fromtask).metadata;
+            }
            // (*totask).subtasks.push_back(newtask);
            // (*fromtask).subtasks.clear();
             ctit.subtasks.insert(totask, newtask);
@@ -1339,6 +1546,8 @@ private:
   std::reference_wrapper<task> current_active_task = tmptask;
 
   std::reference_wrapper<task> root_task = tmptask;
+  std::list<task>::iterator active_task;
+
   vector<std::reference_wrapper<task>> previous_task;
   vector<std::reference_wrapper<task>> parent_task;
 
@@ -1367,6 +1576,37 @@ bool count_uncompleted_tasks(task &task)
   return sum;
 }
 
+void reset_session_timers(task &task)
+{
+  // if metadata contains session time, reset it
+  if (task.metadata.find(SESSION_TIME) != task.metadata.end())
+  {
+    auto it=task.metadata.find(SESSION_TIME);
+    task.metadata.erase(it);
+  }
+  if (task.subtasks.size() > 0)
+  {
+    for (auto &ctask : task.subtasks)
+    {
+      reset_session_timers(ctask);
+    }
+  }
+}
+
+void erase_metadata(task &task)
+{
+  // if metadata contains session time, reset it
+  task.metadata.erase ( task.metadata.begin(), task.metadata.end() );
+
+  if (task.subtasks.size() > 0)
+  {
+    for (auto &ctask : task.subtasks)
+    {
+      erase_metadata(ctask);
+    }
+  }
+}
+
 // if a project with subtasks has any uncompleted tasks,
 // mark it uncomplete
 void check_completed_projects(task &task)
@@ -1390,61 +1630,410 @@ void check_completed_projects(task &task)
   return;
 }
 
+
+void add_metadata(string filename) {
+  std::ifstream file;
+  file.open(filename, std::ifstream::in);
+  std::string line;
+  std::vector <string> lines;
+  // read all lines from the file
+
+  while (!file.eof()) 
+  {
+    std::getline(file, line);
+    lines.push_back(line);
+  } 
+  file.close();
+
+  // open the file again and write the lines back
+  std::ofstream outfile(filename,std::ofstream::out);
+  // write metadata to the file
+  if(use_metadata)
+  {
+    outfile << meta_start_string;
+    for(auto &pair : metadata)
+    {
+      outfile << pair.first << " " << pair.second << " ";
+    }
+     outfile << meta_end_string;
+  }
+  // write the lines back to the file
+  for(auto &line : lines)
+  {
+    outfile << line << "\n";
+  }
+  // close the file
+  outfile.close();
+}
+
+std::map <string, string> get_metadata(string filename) {
+    // read the file
+    std::ifstream file(filename, std::ifstream::in);
+    // quit if the file does not exist
+    std::string line;
+    std::map <string, string> metadata;
+    // define metadata starting string
+
+
+
+    // check if the first line contains metadata
+    // read first line
+    std::getline(file, line);
+    // check if the first line contains metadata
+    if (line.find(meta_start_string) != std::string::npos && line.find(meta_end_string) != std::string::npos) {
+       // remove marker
+       erase_substring(line, meta_start_string);
+       erase_substring(line, meta_end_string);
+       // read words from the line into variable value pairs
+        std::istringstream iss(line);
+        std::string key, value;
+        while (iss >> key >> value) {
+            metadata[key] = value;
+        } 
+    } else {
+       // file does not contain metadata
+    }
+    // close the file
+    file.close();
+    return metadata;
+}
+
+string format_time_diff(int seconds) {
+  // include days, hours, minutes, seconds
+  int days = seconds / 86400;
+  int hours = (seconds % 86400) / 3600;
+  int minutes = (seconds % 3600) / 60;
+  int seconds_left = seconds % 60;
+  stringstream ss;
+  if (days > 0) {
+    ss << days << "d ";
+  }
+  if (hours > 0) {
+    ss << hours << "h ";
+  }
+  if (minutes > 0) {
+    ss << minutes << "m ";
+  }
+  if (seconds_left > 0) {
+    ss << seconds_left << "s";
+  }
+  return ss.str();
+}
+
+// print perenctages nicely with 2 decimal places
+string format_percentage(double percentage) {
+  stringstream ss;
+  // if percentage is nan
+  if (std::isnan(percentage)) {
+    ss << "N/A";
+  } else {
+    ss << std::fixed << std::setprecision(2) << percentage*100 << "%";
+  }
+  return ss.str();
+}
+
+std::pair <int, int> get_total_time(task &task) {
+  int total_session_time = 0;
+  int total_total_time = 0;
+  if (task.subtasks.size() > 0) {
+    for (auto &ctask : task.subtasks) {
+      std::pair <int, int> tmp = get_total_time(ctask);
+      total_session_time += tmp.first;
+      total_total_time += tmp.second;
+    }
+  } 
+  if (task.metadata.find(SESSION_TIME) != task.metadata.end()) {
+    total_session_time += stoi(task.metadata[SESSION_TIME]);
+  }
+  if (task.metadata.find(ACCUMULATED_TIME) != task.metadata.end()) {
+    total_total_time += stoi(task.metadata[ACCUMULATED_TIME]);
+  }
+  
+  return std::make_pair(total_session_time, total_total_time);
+}
+
+// print statistics
+void print_statistics(task &task, bool isroot, bool session_only)
+{
+  int csum = 0, usum = 0;
+  auto total_time = get_total_time(task);
+  int alltime = total_time.second;
+  int sessiontime = total_time.first;
+  if(isroot) {
+     string ses;
+     if(session_only) {
+        ses = "Session";
+     } else {
+        ses = "All time";
+     }
+//     cout << "[Task name] [Time used in working session] [Time used all time]" << endl;      
+     cout << "=============== "<< ses << " summary for all tasks ================" << endl;
+  } else {
+     cout << "**Subsummary for task " << task.name << "**" <<endl;
+  }
+  if(!session_only) {
+    cout << "All time total: " << alltime << " seconds => " << format_time_diff(alltime) << endl;
+  } else {
+    cout << "Session time total: " << sessiontime << " seconds => " << format_time_diff(get_total_time(task).first) << endl;
+  }
+  
+  typedef struct  {
+    string line;
+    int time;
+    double percent_time_session;
+    double percent_time_all;
+  } task_stats;
+  
+  std::list<task_stats> task_stat_list;
+
+  if (task.subtasks.size() > 0)
+  {
+    for (auto &ctask : task.subtasks)
+    {
+      task_stats task_stat;
+      auto tmp = get_total_time(ctask);
+      task_stat.line = ctask.name;
+      if(session_only) {
+        task_stat.time = tmp.first;
+      } else {
+        task_stat.time = tmp.second;
+      }
+      task_stat.percent_time_session = (double)tmp.first / (double)sessiontime;
+      task_stat.percent_time_all = (double)tmp.second / (double)alltime;
+      task_stat_list.push_back(task_stat);
+      print_statistics(ctask, false, session_only);
+    }    
+  }
+  if(session_only) {
+  // sort the list by percent time in session
+    task_stat_list.sort([](task_stats a, task_stats b) {
+      return a.percent_time_session > b.percent_time_session;
+    });
+    // print the list
+    for (auto &task_stat : task_stat_list)
+    {
+        cout << task_stat.line << ": " << " " << format_time_diff(task_stat.time) << " " << format_percentage(task_stat.percent_time_session) << endl;
+    }
+   } else {
+  // sort the list by percent time in all time
+    task_stat_list.sort([](task_stats a, task_stats b) {
+      return a.percent_time_all > b.percent_time_all;
+    });
+    // print the list
+    for (auto &task_stat : task_stat_list)
+    {
+        cout << task_stat.line << ": " << " " << format_time_diff(task_stat.time) << " " << format_percentage(task_stat.percent_time_all) << endl;
+    }
+
+   }
+  if(isroot) {
+    cout << "===============================================================" << endl;
+  } else {
+    cout << "**End of subtask summary**" << endl;
+  }
+}
+
 int main(int argc, const char *argv[])
 {
   string todofile;
-  srand(time(NULL));
+  bool need_help=false;
+  bool reset_timers=false;
+  bool erase_all_metadata=false;
 
-  if (argc < 2)
-  {
-    printf("Usage: %s <filename.md>\n", argv[0]);
-    printf("       %s <filename.md> <work interval duration minutes> <pause duration in minutes> <total (e.g. daily) work time hours> <keyword=restart>\n\n", argv[0]);
-    printf("Examples:%s todo.md\n", argv[0]);
-    printf("         Open todo.md for editing, use default intervals (25 min work 5 min pause)\n\n");
-    printf("         %s todo.md 40 10\n", argv[0]);
-    printf("         Open todo.md for editing, use 40 minute interval for work, 10 minute interval for pause\n\n");
-    printf("         %s todo.md 40 10 7.25\n", argv[0]);
-    printf("         As above, but set total working time goal as 7.25h \n\n");
-    printf("         %s todo.md 40 10 7.25 restart\n", argv[0]);
-    printf("         As above, but restart the accumulation in working time\n\n");
-    return 0;
-  }
-
+  // if argument "-h" is found
   if (argc > 1)
   {
+    if (strcmp(argv[1], "-h") == 0)
+    {
+      need_help=true; 
+    }else if (strcmp(argv[1], "-v") == 0)
+    {
+      // print version
+      printf("Program version %s \n\n", VERSION);
+      return 1;
+    }
+  }
+  if (argc < 2 || need_help)
+  {
+    printf("Program version %s \n\n", VERSION);
+
+    printf("Usage: %s <filename.md> <options>\n", argv[0]);
+    // printf options:
+    cout << "Options:" << endl;
+    cout << "-t <tasktime> <pausetime> <worktime>" << endl;
+    cout << "   tasktime: time in minutes to complete a task" << endl;
+    cout << "   pausetime: time in minutes to pause between tasks" << endl;
+    cout << "   worktime: time in hours to work on a task" << endl;
+    cout << "   These options are automatically stored into the metadata of the file." << endl;
+    cout << "-v print version" << endl;
+    cout << "-h print help" << endl;
+    cout << "-r reset session" << endl;
+    cout << "-e erase metadata (erases all timer information from the file and quits. Does a full timer/setting reset.)" << endl;
+    cout << "-d disable metadata (disables storing timer information to the file. Erases existing timer information from the file.)" << endl;
+    cout << "-s <option>\n"; 
+    cout << "   generate a time usage report from the file\n" << endl;
+    cout << "   option: set to \"1\" for session statistics, \"0\" for all time statistics\n" << endl;
+    // explain what metadata is
+    cout << "Metadata contains information on how much time has been spent on a task and other state varibles. " << endl;
+    cout << "It will be stored into the file enclosed between '" << meta_start_string << "' and '" << meta_end_string << "'. " << endl;
+    // describe tasktime, pausetime, worktime
+    return 1;
+  }
+
+  if(argc > 1) {
     todofile = argv[1];
   }
-  if (argc > 2)
-  {
-    tasktime = stoi(argv[2]) * 60;
+  bool new_tasktime = false;
+  bool new_pausetime = false;
+  bool new_worktime = false;
+  bool show_stats=false;
+  bool show_stats_session=false;
+  if(argc > 2) {
+     // check if any of the remaining args contain "-t"
+      for(int i = 2; i < argc; i++) {
+          if(strcmp(argv[i], "-t") == 0) {
+            // check how many numbers follow after "-t"
+            int num_args = 0;
+            int maxlen = min(i+4, argc);
+            for(int j = i+1; j < maxlen; j++) {
+                if(isdigit(argv[j][0])) {
+                    num_args++;
+                } else {
+                    break;
+                }
+            }
+            cout << num_args << endl;
+            if(num_args > 0 && i+1 < argc) {
+                tasktime = stod(argv[i+1]) * 60;
+                new_tasktime = true;
+                cout << "Tasktime set to " << tasktime << " seconds" << endl;
+            }
+            if(num_args > 1 && i+2 < argc) {
+                pausetime = stod(argv[i+2]) * 60;
+                new_pausetime = true;
+                cout << "Pausetime set to " << pausetime << " seconds" << endl;
+            }
+            if(num_args > 2 && i+3 < argc) {
+                worktime = stod(argv[i+3]) * 60 * 60;
+                new_worktime = true;
+                cout << "Worktime set to " << worktime << " seconds" << endl;
+            }
+          } else if(strcmp(argv[i], "-r") == 0) {
+                reset_timers = true;
+          } else if(strcmp(argv[i], "-e") == 0) {
+             // clear all metadata from the file
+             // prompt for confirmation
+              cout << "Are you sure you want to erase all metadata from the file? (y/n)" << endl;
+              string answer;
+              cin >> answer;
+              if(answer == "y") {
+                  // delete metadata
+                  erase_all_metadata=true;
+              } else {
+                  cout << "Aborting..." << endl;
+                  return 1;
+              }
+          } else if(strcmp(argv[i], "-d") == 0) {
+              // disable metadata
+              use_metadata = false;
+          } else if(strcmp(argv[i], "-v") == 0) {
+              // print version
+              printf("Program version %s \n\n", VERSION);
+              return 1;
+          } else if(strcmp(argv[i], "-s") == 0) {
+              show_stats=true;
+              // if the next argument is a number
+              if(i+1 < argc && isdigit(argv[i+1][0])) {
+                  // set the option
+                  show_stats_session = (stoi(argv[i+1]) == 1);
+              }
+              // show statistics
+              // show_statistics(todofile);
+          }
+
+      }      
   }
-  if (argc > 3)
-  {
-    pausetime = stoi(argv[3]) * 60;
+  metadata=get_metadata(todofile);
+  // if there is no metadata, prompt user
+  if(metadata.size() == 0 && !erase_all_metadata && use_metadata) {
+      // check if the file exists
+      if (!file_exists(todofile))
+      {
+        cout << "Creating a new todo file.\n";
+      } else {
+        cout << "No metadata was found in the file.\n";
+      }
+      cout << "Metadata is used to save timer information in the todo file." << endl;
+      cout << "Without metadata, settings and time accumulation cannot restored after quitting the program." << endl;
+      cout << "You can erase all metadata from the file later using the \"-d\" option." << endl;
+      cout << "" << endl << endl;
+      cout << "Do you want to add the metadata (recommended)? (y/n)" << endl;
+      string answer;
+      cin >> answer;
+      // check if the user wants to add metadata  
+      if(answer.compare("n") == 0) {
+        use_metadata = false;
+      } else if(answer.compare("y") == 0) {
+        use_metadata = true;
+      } else {
+        cout << "Invalid answer. Exiting." << endl;
+        return 1;
+      }
+      if(use_metadata) {
+        metadata[ACCUMULATED_TIME] = "0";
+        metadata[TASK_TIME] = to_string((int)tasktime);
+        metadata[PAUSE_TIME] = to_string((int)pausetime);
+        metadata[WORK_TIME] = to_string((int)(worktime));
+        // add_metadata(todofile);
+      }
+  } else {
+    // load settings from metadata
+    if(!new_tasktime) {
+      if(metadata.find(TASK_TIME) != metadata.end()) {
+        tasktime = stoi(metadata[TASK_TIME]);
+      }
+    } else {
+      metadata[TASK_TIME] = to_string((int)tasktime);
+    }
+    if(!new_pausetime) {
+      if(metadata.find(PAUSE_TIME) != metadata.end()) {
+        pausetime = stoi(metadata[PAUSE_TIME]);
+      }
+    } else {
+      metadata[PAUSE_TIME] = to_string((int)pausetime);
+    }
+    if(!new_worktime) {
+      if(metadata.find(WORK_TIME) != metadata.end()) {
+        worktime = stod(metadata[WORK_TIME]);
+      }
+    } else {
+      metadata[WORK_TIME] = to_string((int)worktime);
+    }
   }
-  if (argc > 4)
-  {
-    worktime = stod(argv[4]) * 60 * 60;
+  srand(time(NULL));
+      
+  // if metadata contains accumulated time use it as accumulated time
+  if(metadata.find(ACCUMULATED_TIME) != metadata.end()) {
+      accumulated_time = stoi(metadata[ACCUMULATED_TIME]);
+  } else {
+      accumulated_time = 0;
+  }
+  // if metadata contains pause stamp
+  if(metadata.find(PAUSE_STAMP) != metadata.end()) {
+      time_at_task_stop = stoi(metadata[PAUSE_STAMP]);
+  } else {
+      time_at_task_stop = time(NULL);
+  } 
+
+  if(reset_timers) {
+      accumulated_time = 0;
+      time_at_task_stop = time(NULL);
+      metadata[ACCUMULATED_TIME] = "0";
+      metadata[PAUSE_STAMP] = to_string(time_at_task_stop);
   }
 
-  time_at_task_stop = time(NULL);
   auto time_at_last_todo_save = time(NULL);
 
-  if (argc > 5 && !string(argv[5]).compare("restart"))
-  {
-    accumulated_time = 0;
-  }
-  else
-  {
-    std::ifstream accfile(accumulated_time_filename, std::ifstream::in);
-
-    std::string line;
-    if (getline(accfile, line))
-    {
-      accumulated_time = stoi(line);
-    }
-    accfile.close();
-  }
   task root_task;
 
   if (!file_exists(todofile))
@@ -1454,7 +2043,23 @@ int main(int argc, const char *argv[])
   else
   {
     vector<string> todolist_raw = read_lines(todofile);
-    root_task.subtasks = extract_tasks(todolist_raw);
+    if(todolist_raw.size() > 0) {
+      root_task.subtasks = extract_tasks(todolist_raw);
+    }
+    if(reset_timers) {
+      reset_session_timers(root_task);	
+    }
+    if(erase_all_metadata) {
+      erase_metadata(root_task);
+      use_metadata = false;
+      save_tasks(todofile, root_task);
+      cout << "All metadata removed from " << todofile << endl;
+      return 0;
+    }
+    if(show_stats) {
+      print_statistics(root_task, true, show_stats_session);
+      return 0;
+    }
   }
   check_completed_projects(root_task);
   auto screen = ScreenInteractive::Fullscreen();
@@ -1466,11 +2071,16 @@ int main(int argc, const char *argv[])
       using namespace std::chrono_literals;
       std::this_thread::sleep_for(0.3s);
       current_time = time(NULL);
-
+      if(working_on_a_task) {
+        time_t time_add = time(NULL) - time_at_task_start - elsetime;    
+        // format time difference to human readable format
+        time_title = format_time_diff(time_add);
+      } else {
+        time_title = format_time_diff(0);
+      }
       if (current_time - time_at_last_todo_save > 60)
       {
         save_tasks(todofile, root_task);
-        save_accumulation();
         time_at_last_todo_save = time(NULL);
       }
 
@@ -1502,7 +2112,7 @@ int main(int argc, const char *argv[])
   update.join();
 
   save_tasks(todofile, root_task);
-  save_accumulation();
+
 
   return 0;
 }

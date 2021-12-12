@@ -106,7 +106,8 @@ Use up, down, right, left, enter, pgup, pgdown, insert and 'e' in the menu to na
 
 	./todoman todo.md -t 40 10
 
-Open todo.md for editing, use 40 minute interval for work, 10 minute interval for pause
+Open todo.md for editing, use 40 minute interval for work, 10 minute interval for pause.
+These settings will be stored in the file by default. This command is used for changing the intervals. 
 
 	./todoman todo.md -t 40 10 7.25
 

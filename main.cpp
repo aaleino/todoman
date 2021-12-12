@@ -779,7 +779,7 @@ public:
     }
     else
     {
-      timetitle = "(" + time_title + ")";
+      timetitle = time_title + ": ";
     }
     return window(text(L"Summary"),
                   vbox({text(to_wstring(timetitle + work_task_title)), separator(), RenderGauge(1) | color(curcol),

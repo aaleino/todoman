@@ -1873,6 +1873,10 @@ void print_statistics(task &task, bool isroot, bool session_only)
     // print the list
     for (auto &task_stat : task_stat_list)
     {
+        // if the time is 0, don't print it
+        if(task_stat.time == 0) {
+          continue;
+        }
         cout << task_stat.line << ": " << " " << format_time_diff(task_stat.time) << " " << format_percentage(task_stat.percent_time_session) << endl;
     }
    } else {
@@ -1883,6 +1887,10 @@ void print_statistics(task &task, bool isroot, bool session_only)
     // print the list
     for (auto &task_stat : task_stat_list)
     {
+        // if the time is 0, don't print it
+        if(task_stat.time == 0) {
+          continue;
+        }
         cout << task_stat.line << ": " << " " << format_time_diff(task_stat.time) << " " << format_percentage(task_stat.percent_time_all) << endl;
     }
 

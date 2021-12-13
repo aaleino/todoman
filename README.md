@@ -28,8 +28,6 @@ My vision is the program will allow users to create very detailed to-do lists an
 A detailed to-do list could help in remembering the state in which the project was left last time. 
 Time tracking could help to identify bottlenecks in the daily routine and check if resources were allocated correctly.
 
-*The file "todo.md" contains a todolist that I use myself to complete this program.*
-
 **See the change log at the end of this file for a list of recent changes.**
 
 The timer

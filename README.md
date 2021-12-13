@@ -1,7 +1,6 @@
 # Todo manager
 
-This program makes todo lists easily readable and editable and helps to divide tasks into subtasks. It also tracks the time spent on each task. 
-This is an experimental hobby project that is under construction.
+This program makes todo lists easily readable and editable and helps to divide tasks into subtasks. It also tracks the time spent on each task and can be used to write small notes. This is an experimental hobby project that is under construction.
 
 Demo
 ====

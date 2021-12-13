@@ -18,17 +18,15 @@ produces
      - [ ] Hobby
 
 
-Explanation: "Work" was converted to a project, and it contains subitems. "Hobby" was not and it can be tagged completed/uncompleted. "Work" was completed when all the subtasks were completed. Subprojects can be started within projects, i.e. one can always convert a to-do item to a project. 
+Explanation: "Work" was converted to a project that contains subitems. "Hobby" was not and can be tagged completed/uncompleted. "Work" was completed when all the subtasks were completed. Subprojects can be started within projects, i. e. one can always convert a to-do item to a project.
 
-After quitting the program, the user can generate a time usage report on the tasks on an all-time or per session basis. This information is stored in the todo file as comments and resets when requested.
+After quitting the program, the user can generate a time usage report on the tasks on an all-time or per session basis. This information is stored in the to-do file as comments and resets when requested.
 
-Reading long to-do lists can be daunting. The file may grow long but should be relatively easy to read with the program if enough projects (subtasks) are used.  
+Reading long to-do lists can be daunting. The file may grow long but should be relatively easy to read with the program if enough projects (subtasks) are used.
 
-My vision is the program will allow users to create very detailed to-do lists and help them to organize large and more abstract tasks.
-A detailed to-do list could help in remembering the state in which the project was left last time. 
-Time tracking could help to identify bottlenecks in the daily routine and check if resources were allocated correctly.
+My vision is the program will allow users to create very detailed to-do lists. It should also help to organize large, more abstract tasks. A detailed to-do list could help in remembering the state the project was left last time. Time tracking could help identify bottlenecks in the daily routine and check for wise time usage.
 
-**See the change log at the end of this file for a list of recent changes.**
+See the changelog at the end of this file for a list of recent changes.
 
 The timer
 =========
@@ -132,8 +130,8 @@ Uses FTXUI by Arthur Sonzogni
 https://github.com/ArthurSonzogni/FTXUI
 (I have forked my own version that reduces blinking in windows terminal)
 
-Change log
-==========
+Changelog
+=========
 
 12.12.2021:
 

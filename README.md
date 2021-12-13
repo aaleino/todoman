@@ -54,6 +54,8 @@ Caveat
 The files can be reorganized using any text editor, but the editor should use whitespace instead of tabs for indentation.
 Linux command 'expand' works for getting rid of tabs.
 
+The code was written in a hurry...
+
 Installation
 ============
 

@@ -20,7 +20,7 @@ produces
 
 Explanation: "Work" was converted to a project that contains subitems. "Hobby" was not and can be tagged completed/uncompleted. "Work" was completed when all the subtasks were completed. Subprojects can be started within projects, i. e. one can always convert a to-do item to a project.
 
-After quitting the program, the user can generate a time usage report on the tasks on an all-time or per session basis. This information is stored in the to-do file as comments and resets when requested.
+The bars keep track of the total time towards a goal (e. g. daily target) and suggest when to take a break. After quitting the program, the user can generate a time usage report on the tasks on an all-time or per session basis. This information is stored in the to-do file as comments and resets when requested.
 
 Reading long to-do lists can be daunting. The file may grow long but should be relatively easy to read with the program if enough projects (subtasks) are used.
 

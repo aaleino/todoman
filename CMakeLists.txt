@@ -3,7 +3,6 @@ cmake_minimum_required (VERSION 3.11)
 # --- Fetch FTXUI --------------------------------------------------------------
 include(FetchContent)
 
-set(FETCHCONTENT_UPDATES_DISCONNECTED TRUE)
 FetchContent_Declare(ftxui
   GIT_REPOSITORY https://github.com/aaleino/FTXUI
   GIT_TAG master

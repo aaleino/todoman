@@ -1221,7 +1221,7 @@ public:
             time_t time_add = time(NULL) - time_at_task_start - elsetime;
             // if metadata has ACCUMULATED_TIME
             int prevacc=0;
-            if((*prev_active).metadata.find("ACCUMULATED_TIME") != (*prev_active).metadata.end()) {
+            if((*prev_active).metadata.find(ACCUMULATED_TIME) != (*prev_active).metadata.end()) {
               prevacc=stoi((*prev_active).metadata[ACCUMULATED_TIME]);
             }
             prevacc+=time_add;

@@ -1,7 +1,6 @@
 # Todo manager
 
-This program makes todo lists easily readable and editable and helps to divide tasks into subtasks. It also tracks the time spent on each task. 
-This is an experimental hobby project that is under construction.
+This program makes todo lists easily readable and editable and helps to divide tasks into subtasks. It also tracks the time spent on each task and can be used to write small notes. This is an experimental hobby project that is under construction.
 
 Demo
 ====
@@ -18,17 +17,15 @@ produces
      - [ ] Hobby
 
 
-Explanation: "Work" was converted to a project, and it contains subitems. "Hobby" was not and it can be tagged completed/uncompleted. "Work" was completed when all the subtasks were completed. Subprojects can be started within projects, i.e. one can always convert a to-do item to a project. 
+Explanation: "Work" was converted to a project that contains subitems. "Hobby" was not and can be tagged completed/uncompleted. "Work" was completed when all the subtasks were completed. Subprojects can be started within projects, i. e. one can always convert a to-do item to a project.
 
-Reading long to-do lists can be daunting. The file may grow long but should be relatively easy to read with the program if enough projects (subtasks) are used.  
+The bars keep track of the total time towards a goal (e. g. daily target) and suggest when to take a break. After quitting the program, the user can generate a time usage report on the tasks on an all-time or per session basis. This information is stored in the to-do file as comments and resets when requested.
 
-My vision is the program will allow users to create very detailed to-do lists and help them to organize large and more abstract tasks.
-A detailed to-do list could help in remembering the state in which the project was left last time. 
-Time tracking could help to identify bottlenecks in the daily routine and check if resources were allocated correctly.
+Reading long to-do lists can be daunting. The file may grow long but should be relatively easy to read with the program if enough projects (subtasks) are used.
 
-*The file "todo.md" contains a todolist that I use myself to complete this program.*
+My vision is the program will allow users to create very detailed to-do lists. It should also help to organize large, more abstract tasks. A detailed to-do list could help in remembering the state the project was left last time. Time tracking could help identify bottlenecks in the daily routine and check for wise time usage.
 
-**See the change log at the end of this file for a list of recent changes.**
+See the changelog at the end of this file for a list of recent changes.
 
 The timer
 =========
@@ -37,7 +34,8 @@ The pause timer is automatically on.
 
 Once you start working on any item, the program will count the time towards a goal that can be set at command line (see *Usage*).
 The progress is shown in percentages:  (Current duration) / (Target time) * 100%.
-Additionally, the total time spent on each task is stored. This data can be viewed using "-s 0" or "-s 1" options. 
+
+The total time spent on each task is stored as comments. This data can be viewed using "-s 0" or "-s 1" options. 
 
 If you change the task before the timer has been completed, the work timer will not reset. It will reset **only when** you press "stop working".
 If task time tracking is used, the time worked so far will be deposited to the previous task.
@@ -55,6 +53,8 @@ Caveat
 **Do not open any other files with the program than todo lists made with the program.**
 The files can be reorganized using any text editor, but the editor should use whitespace instead of tabs for indentation.
 Linux command 'expand' works for getting rid of tabs.
+
+The code was written in a hurry...
 
 Installation
 ============
@@ -132,8 +132,8 @@ Uses FTXUI by Arthur Sonzogni
 https://github.com/ArthurSonzogni/FTXUI
 (I have forked my own version that reduces blinking in windows terminal)
 
-Change log
-==========
+Changelog
+=========
 
 12.12.2021:
 

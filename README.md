@@ -23,7 +23,7 @@ The bars keep track of the total time towards a goal (e. g. daily target) and su
 
 Reading long to-do lists can be daunting. The file may grow long but should be relatively easy to read with the program if enough projects (subtasks) are used.
 
-My vision is the program will allow users to create very detailed to-do lists. It should also help to organize large, more abstract tasks. A detailed to-do list could help in remembering the state the project was left last time. Time tracking could help identify bottlenecks in the daily routine and check for wise time usage.
+My vision is the program will allow users to create very detailed to-do lists. It should also help to organize large, more abstract tasks. A detailed to-do list could help in remembering the state the project was left last time. Time tracking could help  identify bottlenecks in the daily routine and optimize time usage.
 
 See the changelog at the end of this file for a list of recent changes.
 
@@ -135,9 +135,13 @@ https://github.com/ArthurSonzogni/FTXUI
 Changelog
 =========
 
+18.12.2021:
+
+Raport will now include starting and ending dates. Bug fixes.
+
 12.12.2021:
 
-Major changes related to time tracking. The program now allows tracking time and storing settings in the edited file. Beware of bugs!!
+Major changes related to time tracking. The program now allows tracking time and storing settings in the edited file. Beware of bugs!
 
 11.12.2021:
 

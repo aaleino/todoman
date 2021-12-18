@@ -1886,9 +1886,9 @@ void print_statistics(task &task, bool isroot, bool session_only)
 //     cout << "---------------  for task " << task.name << " ------ " <<endl;
   }
   if(!session_only) {
-    cout << "All tasks: " << format_time_diff(alltime) << endl;
+    cout << "Time spent on all tasks: " << format_time_diff(alltime) << endl;
   } else {
-    cout << "Session time total: " << sessiontime << " seconds => " << format_time_diff(get_total_time(task).first) << endl;
+    cout << "Time spent on tasks during session: " << format_time_diff(get_total_time(task).first) << endl;
   }
   
   typedef struct  {

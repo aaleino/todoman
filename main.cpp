@@ -1864,7 +1864,7 @@ void print_statistics(task &task, bool isroot, bool session_only)
      if(session_only) {
       if (metadata.find(SESSION_STAMP) != metadata.end() && metadata.find(SESSION_END_STAMP) != metadata.end())
       {
-        cout << "Data gathered from " << format_time_stamp(stoi(metadata[SESSION_STAMP]));
+        cout << "Session raport from " << format_time_stamp(stoi(metadata[SESSION_STAMP]));
         cout << " to " << format_time_stamp(stoi(metadata[SESSION_END_STAMP])) << ". " << endl;
       } else {
         cout << "No session start time found from the file. It will be included on next session timer restart." << endl;
@@ -1872,7 +1872,7 @@ void print_statistics(task &task, bool isroot, bool session_only)
      } else {
       if (metadata.find(ALLTIME_STAMP) != metadata.end() && metadata.find(ALLTIME_END_STAMP) != metadata.end())
       {
-        cout << "Session raport from " << format_time_stamp(stoi(metadata[ALLTIME_STAMP]));
+        cout << "All data dates from " << format_time_stamp(stoi(metadata[ALLTIME_STAMP]));
         cout << " to " << format_time_stamp(stoi(metadata[ALLTIME_END_STAMP])) << endl;
       } else {
         cout << "No start time found from the file. Erasing all metadata with \'-e\' -option and re-editing will add the time. " << endl;

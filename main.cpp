@@ -47,8 +47,12 @@ SOFTWARE.
 #define ACCUMULATED_TIME "at"
 #define SESSION_TIME "st"
 #define PAUSE_STAMP "ps"
+
 #define SESSION_STAMP "ss"
 #define ALLTIME_STAMP "as"
+
+#define SESSION_END_STAMP "sse"
+#define ALLTIME_END_STAMP "ase"
 
 #define TASK_TIME "tasktime"
 #define PAUSE_TIME "pausetime"
@@ -583,6 +587,8 @@ void save_tasks(string filename, task &task)
   myfile.open(filename);
   if (use_metadata)
   {
+    metadata[SESSION_END_STAMP] = to_string(time(0));
+    metadata[ALLTIME_END_STAMP] = to_string(time(0));
     myfile << meta_start_string;
     for (auto &pair : metadata)
     {
@@ -1856,18 +1862,18 @@ void print_statistics(task &task, bool isroot, bool session_only)
      cout << title << endl;
      // if metadata has timestamp for session start, print it
      if(session_only) {
-      if (metadata.find(SESSION_STAMP) != metadata.end())
+      if (metadata.find(SESSION_STAMP) != metadata.end() && metadata.find(SESSION_END_STAMP) != metadata.end())
       {
         cout << "Data gathered from " << format_time_stamp(stoi(metadata[SESSION_STAMP]));
-        cout << " to " << format_time_stamp(time(0)) << ". " << endl;
+        cout << " to " << format_time_stamp(stoi(metadata[SESSION_END_STAMP])) << ". " << endl;
       } else {
         cout << "No session start time found from the file. It will be included on next session timer restart." << endl;
       }
      } else {
-      if (metadata.find(ALLTIME_STAMP) != metadata.end())
+      if (metadata.find(ALLTIME_STAMP) != metadata.end() && metadata.find(ALLTIME_END_STAMP) != metadata.end())
       {
         cout << "Session raport from " << format_time_stamp(stoi(metadata[ALLTIME_STAMP]));
-        cout << " to " << format_time_stamp(stoi(metadata[ALLTIME_STAMP])) << endl;
+        cout << " to " << format_time_stamp(stoi(metadata[ALLTIME_END_STAMP])) << endl;
       } else {
         cout << "No start time found from the file. Erasing all metadata with \'-e\' -option and re-editing will add the time. " << endl;
       }

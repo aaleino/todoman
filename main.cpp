@@ -1864,7 +1864,7 @@ void print_statistics(task &task, bool isroot, bool session_only)
      if(session_only) {
       if (metadata.find(SESSION_STAMP) != metadata.end() && metadata.find(SESSION_END_STAMP) != metadata.end())
       {
-        cout << "Session raport from " << format_time_stamp(stoi(metadata[SESSION_STAMP]));
+        cout << "Session report from " << format_time_stamp(stoi(metadata[SESSION_STAMP]));
         cout << " to " << format_time_stamp(stoi(metadata[SESSION_END_STAMP])) << ". " << endl;
       } else {
         cout << "No session start time found from the file. It will be included on next session timer restart." << endl;

@@ -22,7 +22,7 @@ Explanation: "Work" was converted to a project that contains subitems. "Hobby" w
 The bars keep track of the total time towards a goal (e. g. daily target) and suggest when to take a break. After quitting the program, the user can generate a time usage report on the tasks on an all-time or per session basis. This information is stored in the to-do file as comments and resets when requested. Example report:
 
 	=============== Session summary ================
-	Session raport from 2021-12-18 15:27:48 to 2021-12-18 15:29:57.
+	Session report from 2021-12-18 15:27:48 to 2021-12-18 15:29:57.
 	Time spent on tasks during session: 46s
 	Work:  38s 82.61%
 	Hobby:  8s 17.39%
@@ -149,7 +149,7 @@ Changelog
 
 18.12.2021:
 
-Raport will now include starting and ending dates. Bug fixes.
+Report will now include starting and ending dates. Bug fixes.
 
 12.12.2021:
 

@@ -59,14 +59,16 @@ The log
 
 A log is maintained in "todo_log.txt". The log functionality is still under development.
 
-Caveat
-======
+Caveats
+=======
 
 **Do not open any other files with the program than todo lists made with the program.**
 The files can be reorganized using any text editor, but the editor should use whitespace instead of tabs for indentation.
 Linux command 'expand' works for getting rid of tabs.
 
-The code was written in a hurry...
+The code was written in a hurry. **Please do not use the software for serious time-tracking yet.** 
+
+I am currently "beta testing" the code and have found a couple of stability issues. I will try to fix them asap.
 
 Installation
 ============

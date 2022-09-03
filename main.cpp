@@ -1508,10 +1508,14 @@ public:
         {
           if (task.subtasks.size() > 0)
           {
-            previous_task.push_back(cat);
-            current_active_task = task;
-            updateSelection();
-            return;
+            // prevent from moving to folder which is hightlighted for copy
+            // otherwise user can try to move folder into itself
+            if(!task.highlighted_for_copy) {
+              previous_task.push_back(cat);
+              current_active_task = task;
+              updateSelection();
+              return;
+            }
           }
           else
           {
@@ -1981,31 +1985,10 @@ void print_statistics(task &task, bool isroot, bool session_only)
     }
 }
 
-int main(int argc, const char *argv[])
-{
-  string todofile;
-  bool need_help=false;
-  bool reset_timers=false;
-  bool erase_all_metadata=false;
-
-  // if argument "-h" is found
-  if (argc > 1)
-  {
-    if (strcmp(argv[1], "-h") == 0)
-    {
-      need_help=true; 
-    }else if (strcmp(argv[1], "-v") == 0)
-    {
-      // print version
-      printf("Program version %s \n\n", VERSION);
-      return 1;
-    }
-  }
-  if (argc < 2 || need_help)
-  {
+void print_help(const char *programname) {
     printf("Program version %s \n\n", VERSION);
 
-    printf("Usage: %s <filename.md> <options>\n", argv[0]);
+    printf("Usage: %s <filename.md> <options>\n", programname);
     // printf options:
     cout << "Options:" << endl;
     cout << "-t <tasktime> <pausetime> <worktime>" << endl;
@@ -2025,92 +2008,106 @@ int main(int argc, const char *argv[])
     cout << "Metadata contains information on how much time has been spent on a task and other state varibles. " << endl;
     cout << "It will be stored into the file enclosed between '" << meta_start_string << "' and '" << meta_end_string << "'. " << endl;
     // describe tasktime, pausetime, worktime
-    return 1;
+}
+
+int main(int argc, const char *argv[])
+{
+  string todofile;
+  bool need_help=false;
+  bool reset_timers=false;
+  bool erase_all_metadata=false;
+
+  if (argc < 2)
+  {
+      print_help(argv[0]);
+      return 0;
   }
 
-  if(argc > 1) {
-    todofile = argv[1];
-  }
   bool new_tasktime = false;
   bool new_pausetime = false;
   bool new_worktime = false;
   bool show_stats=false;
   bool show_stats_session=false;
-  if(argc > 2) {
+
      // check if any of the remaining args contain "-t"
-      for(int i = 2; i < argc; i++) {
-          if(strcmp(argv[i], "-t") == 0) {
-            // check how many numbers follow after "-t"
-            int num_args = 0;
-            int maxlen = min(i+4, argc);
-            for(int j = i+1; j < maxlen; j++) {
-                if(isdigit(argv[j][0])) {
-                    num_args++;
-                } else {
-                    break;
-                }
+  for(int i = 1; i < argc; i++) {
+      if(strcmp(argv[i], "-t") == 0) {
+        // check how many numbers follow after "-t"
+        int num_args = 0;
+        int maxlen = min(i+4, argc);
+        for(int j = i+1; j < maxlen; j++) {
+            if(isdigit(argv[j][0])) {
+                num_args++;
+            } else {
+                break;
             }
-            cout << num_args << endl;
-            if(num_args > 0 && i+1 < argc) {
-                tasktime = stod(argv[i+1]) * 60;
-                new_tasktime = true;
-                cout << "Tasktime set to " << tasktime << " seconds" << endl;
-            }
-            if(num_args > 1 && i+2 < argc) {
-                pausetime = stod(argv[i+2]) * 60;
-                new_pausetime = true;
-                cout << "Pausetime set to " << pausetime << " seconds" << endl;
-            }
-            if(num_args > 2 && i+3 < argc) {
-                worktime = stod(argv[i+3]) * 60 * 60;
-                new_worktime = true;
-                cout << "Worktime set to " << worktime << " seconds" << endl;
-            }
-          } else if(strcmp(argv[i], "-r") == 0) {
-                reset_timers = true;
-                cout << "Session timer will be reset from the file. Cumulative timers will not reset. Continue? (y/n)" << endl;
-                string answer;
-                cin >> answer;
-                if(answer == "y") {
+        }
+        cout << num_args << endl;
+        if(num_args > 0 && i+1 < argc) {
+            tasktime = stod(argv[i+1]) * 60;
+            new_tasktime = true;
+        }
+        if(num_args > 1 && i+2 < argc) {
+            pausetime = stod(argv[i+2]) * 60;
+            new_pausetime = true;
+        }
+        if(num_args > 2 && i+3 < argc) {
+            worktime = stod(argv[i+3]) * 60 * 60;
+            new_worktime = true;
+        }
+      } else if(strcmp(argv[i], "-r") == 0) {
+            reset_timers = true;
+            cout << "Session timer will be reset from the file. Cumulative timers will not reset. Continue? (y/n)" << endl;
+            string answer;
+            cin >> answer;
+            if(answer == "y") {
 
-                } else {
-                    cout << "Aborting..." << endl;
-                    return 1;
-                }
-
-          } else if(strcmp(argv[i], "-e") == 0) {
-             // clear all metadata from the file
-             // prompt for confirmation
-              cout << "Are you sure you want to erase all metadata from the file? (y/n)" << endl;
-              string answer;
-              cin >> answer;
-              if(answer == "y") {
-                  // delete metadata
-                  erase_all_metadata=true;
-              } else {
-                  cout << "Aborting..." << endl;
-                  return 1;
-              }
-          } else if(strcmp(argv[i], "-d") == 0) {
-              // disable metadata
-              use_metadata = false;
-          } else if(strcmp(argv[i], "-v") == 0) {
-              // print version
-              printf("Program version %s \n\n", VERSION);
+            } else {
+                cout << "Aborting..." << endl;
+                return 1;
+            }
+      } else if(strcmp(argv[i], "-e") == 0) {
+          // clear all metadata from the file
+          // prompt for confirmation
+          cout << "Are you sure you want to erase all metadata from the file? (y/n)" << endl;
+          string answer;
+          cin >> answer;
+          if(answer == "y") {
+              // delete metadata
+              erase_all_metadata=true;
+          } else {
+              cout << "Aborting..." << endl;
               return 1;
-          } else if(strcmp(argv[i], "-s") == 0) {
-              show_stats=true;
-              // if the next argument is a number
-              if(i+1 < argc && isdigit(argv[i+1][0])) {
-                  // set the option
-                  show_stats_session = (stoi(argv[i+1]) == 1);
-              }
-              // show statistics
-              // show_statistics(todofile);
           }
-
-      }      
-  }
+      } else if(strcmp(argv[i], "-h") == 0) {
+          print_help(argv[0]);
+          return 1;
+      } else if(strcmp(argv[i], "-d") == 0) {
+          // disable metadata
+          use_metadata = false;
+      } else if(strcmp(argv[i], "-v") == 0) {
+          // print version
+          printf("Program version %s \n\n", VERSION);
+          return 1;
+      } else if(strcmp(argv[i], "-s") == 0) {
+          show_stats=true;
+          // if the next argument is a number
+          if(i+1 < argc && isdigit(argv[i+1][0])) {
+              // set the option
+              show_stats_session = (stoi(argv[i+1]) == 1);
+          }
+          // show statistics
+          // show_statistics(todofile);
+      } else {
+          if(argv[i][0] == '-') {
+            cout << "Unknown option\n " << argv[i];
+            return  1;
+          } else { 
+            todofile = argv[i]; 
+          }
+      }
+ 
+  }      
   metadata=get_metadata(todofile);
   // if there is no metadata, prompt user
   if(metadata.size() == 0 && !erase_all_metadata && use_metadata) {
@@ -2275,6 +2272,15 @@ int main(int argc, const char *argv[])
 
   save_tasks(todofile, root_task);
 
+  if(new_tasktime) {
+    cout << "Tasktime set to " << tasktime << " seconds" << endl; 
+  }  
+  if(new_pausetime) {
+    cout << "Pausetime set to " << pausetime << " seconds " << endl;
+  }
+  if(new_worktime) {
+    cout << "Worktime set to " << worktime << " seconds " << endl;
+  }
 
   return 0;
 }

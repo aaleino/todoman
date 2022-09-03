@@ -2055,6 +2055,7 @@ int main(int argc, const char *argv[])
             worktime = stod(argv[i+3]) * 60 * 60;
             new_worktime = true;
         }
+        i+=num_args;
       } else if(strcmp(argv[i], "-r") == 0) {
             reset_timers = true;
             cout << "Session timer will be reset from the file. Cumulative timers will not reset. Continue? (y/n)" << endl;
@@ -2096,6 +2097,7 @@ int main(int argc, const char *argv[])
               // set the option
               show_stats_session = (stoi(argv[i+1]) == 1);
           }
+          i++;
           // show statistics
           // show_statistics(todofile);
       } else {
@@ -2103,11 +2105,17 @@ int main(int argc, const char *argv[])
             cout << "Unknown option\n " << argv[i];
             return  1;
           } else { 
-            todofile = argv[i]; 
+	    if(todofile.size() == 0) { 
+              todofile = argv[i]; 
+            } else {
+              cout << "Unknown arguments given\n";
+               return 1;
+	    }
           }
       }
  
   }      
+  cout << "Opening " << todofile << "\n";
   metadata=get_metadata(todofile);
   // if there is no metadata, prompt user
   if(metadata.size() == 0 && !erase_all_metadata && use_metadata) {

@@ -75,6 +75,7 @@ bool working_on_a_task = false;
 time_t accumulated_time = 0;
 time_t time_at_task_start, time_at_task_stop;
 int elsetime = 0;
+int menu_type = 0;
 
 double tasktime = 60 * 40;
 double worktime = 26100;
@@ -89,6 +90,7 @@ bool annotate = false;
 bool annotation_begins = true;
 time_t annotation_start;
 std::string annotation;
+std::string insertfile;
 
 using namespace ftxui;
 using namespace std;
@@ -327,13 +329,14 @@ double get_relative_size(string input)
     return 1;
   return stod(value);
 }
-
+int bookmark_counter=0;
 struct task
 {
   bool is_note;
   bool highlighted_for_copy;
   bool completed;
   double importance;
+  int bookmark_id = 0;
 
   string name;
   string comment;
@@ -837,6 +840,9 @@ public:
   std::function<void()> on_insert = []() {};
   std::function<void()> on_space = []() {};
   std::function<void()> on_edit = []() {};
+  std::function<void()> on_bookmark = []() {};
+  std::function<void()> on_bookmark_next = []() {};
+  std::function<void()> on_bookmark_prev = []() {};
 
   bool OnEvent(Event event) override {
     if(event == Event::Special("\x1b[5~")) {
@@ -849,6 +855,12 @@ public:
       on_space();
     } else if(event == Event::Special("e")) {
       on_edit();
+    } else if(event == Event::Special("m")) {
+      on_bookmark_next();
+    } else if(event == Event::Special("n")) {
+      on_bookmark_prev();
+    } else if(event == Event::Special("b")) {
+      on_bookmark();
     }else {
       return  Menu::OnEvent(event);
     }
@@ -898,16 +910,30 @@ public:
     button_go_back.on_click = [&] {
       // todoselection.go_back();
     };
-
-    menu.entries = {L"Go Back",
-                    L"Add task above",
-                    L"Add note above",
-                    L"Convert to project",
-                    L"Remove task / note",
-                    L"Start working",
-                    L"Stop working",
-                    L"Select task at random",
-                    L"Exit"};
+    if(menu_type == 0) {
+        menu.entries = {L"Go Back",
+                        L"Add task above",
+                        L"Add note above",
+                        L"Convert to project",
+                        L"Remove task / note",
+                        L"Start working",
+                        L"Stop working",
+                        L"Select task at random",
+                        L"Toggle bookmarks",
+                        L"Exit"};
+    } else {
+        menu.entries = {L"Go Back",
+                        L"Add task above",
+                        L"Add note above",
+                        L"Convert to project",
+                        L"Remove task / note",
+                        L"Start working",
+                        L"Stop working",
+                        L"Select task at random",
+                        L"Insert others under selected",
+                        L"Insert from file",
+                        L"Exit"};
+    }
     menu.selected = 0;
     timergauge.focusable = false;
 
@@ -1309,8 +1335,120 @@ public:
                     " seconds.");
         }
       }
+      else if (menu.selected == 8 && menu_type == 1)
+      {
+        // copy everything else under selected task
+        // convert to project
+        int i = 0;
+        task &ctit = current_active_task;
+        auto to_note = ctit.subtasks.begin();
+        for (auto it = ctit.subtasks.begin(); it != ctit.subtasks.end(); ++it)
+        {
+          if (i == todomenu.selected)
+          {
+            if((*it).is_note) {
+              annotate=true;
+              annotation="Cannot move to a note!";
+              return;
+            }
+            to_note = it;
+          }
+          i++;
+        }
+        i=0;
+        for (auto it = ctit.subtasks.begin(); it != ctit.subtasks.end(); ++it)
+        {
+          if (i != todomenu.selected) {
+            task newtask;
+            newtask.name = (*it).name;
+            newtask.is_note = (*it).is_note;
+            newtask.highlighted_for_copy = false;
+            newtask.subtasks = (*it).subtasks;
+            newtask.completed = (*it).completed;
+            if(use_metadata) {
+              newtask.metadata = (*it).metadata;
+            }
+            (*to_note).subtasks.push_back(newtask);
+            //ctit.subtasks.erase(it);
+          }
+          i++;
+        }
+        i=0;
+        for (auto it = ctit.subtasks.begin(); it != ctit.subtasks.end();)
+        {
+          if (i == todomenu.selected) {
+            ++it;
+          } else {
+            it=ctit.subtasks.erase(it);
+          }
+          i++;
+        }
+        updateSelection();
+      }
 
-      if (menu.selected == 8)
+      else if (menu.selected == 8 && menu_type == 1)
+      {
+        // copy everything else under selected task
+        // convert to project
+        int i = 0;
+        task &ctit = current_active_task;
+        auto to_note = ctit.subtasks.begin();
+        for (auto it = ctit.subtasks.begin(); it != ctit.subtasks.end(); ++it)
+        {
+          if (i == todomenu.selected)
+          {
+            if((*it).is_note) {
+              annotate=true;
+              annotation="Cannot move to a note!";
+              return;
+            }
+            to_note = it;
+          }
+          i++;
+        }
+        i=0;
+        for (auto it = ctit.subtasks.begin(); it != ctit.subtasks.end(); ++it)
+        {
+          if (i != todomenu.selected) {
+            task newtask;
+            newtask.name = (*it).name;
+            newtask.is_note = (*it).is_note;
+            newtask.highlighted_for_copy = false;
+            newtask.subtasks = (*it).subtasks;
+            newtask.completed = (*it).completed;
+            if(use_metadata) {
+              newtask.metadata = (*it).metadata;
+            }
+            (*to_note).subtasks.push_back(newtask);
+            //ctit.subtasks.erase(it);
+          }
+          i++;
+        }
+        i=0;
+        for (auto it = ctit.subtasks.begin(); it != ctit.subtasks.end();)
+        {
+          if (i == todomenu.selected) {
+            ++it;
+          } else {
+            it=ctit.subtasks.erase(it);
+          }
+          i++;
+        }
+        updateSelection();
+      }
+      else if (menu.selected == 9 && menu_type == 1)
+      {
+        // insert from file
+
+      }
+      else if (menu.selected == 8 && menu_type == 0)
+      {
+        // toggle between bookmarks
+
+      }
+
+
+      if (menu.selected == 9 && menu_type == 0 || menu.selected == 10 && menu_type == 1)
       {
         if(working_on_a_task == true) {
           work_task_title = "Currently not working on a task";
@@ -1349,6 +1487,67 @@ public:
     todomenu.on_pageup = [&] {
         todomenu.selected = 0;
     };
+
+    todomenu.on_bookmark = [&] {
+        task &ctit = current_active_task;
+        if(ctit.bookmark_id == 0) {
+          bookmarks.push_back(current_active_task);
+          ctit.bookmark_id = bookmark_counter;
+          put_to_log("Added bookmark number " + to_string(bookmark_counter));
+          bookmark_counter++;
+
+        } else {
+          put_to_log("Erasing bookmark " + to_string(ctit.bookmark_id));
+          auto deleteit=bookmarks.begin();
+          for (auto it=bookmarks.begin(); it!=bookmarks.end(); ++it) {
+            task &ait = *it;
+            if(ait.bookmark_id = ctit.bookmark_id) {
+                deleteit=it;
+            }
+          }
+          if(bookmarks.size() != 0) {
+            bookmarks.erase(deleteit);
+            put_to_log("Succesfully erased ");
+          }
+          ctit.bookmark_id = 0;
+          updateSelection();
+        }
+
+    };
+
+    todomenu.on_bookmark_next = [&] {
+         put_to_log("Toggling bookmarks. Size is " + to_string(bookmarks.size()));
+
+        if(bookmarks.size() == 0) {
+          return;
+        }
+        bool has_position=false;
+        for (auto it=bookmarks.begin(); it!=bookmarks.end(); ++it) {
+          if(it == cur_bookmark_pos) has_position=true;
+        }
+        put_to_log("Toggling bookmarks. Size is " + to_string(bookmarks.size()));
+        prev_bookmark_pos = cur_bookmark_pos;
+
+        if(!has_position) {
+          cur_bookmark_pos = bookmarks.begin();
+        }
+        if(prev_bookmark_pos == cur_bookmark_pos) {
+          // attempt to increment the position
+          if(cur_bookmark_pos == bookmarks.end()) {
+             cur_bookmark_pos = bookmarks.begin();
+          } else {
+            if(cur_bookmark_pos != bookmarks.end() && bookmarks.size() > 0) {
+              ++cur_bookmark_pos;
+            }
+          }
+        }
+
+        current_active_task = (*cur_bookmark_pos);
+
+        updateSelection();
+
+    };
+
 
     todomenu.on_pagedown = [&] {
         task ctask = current_active_task;
@@ -1654,6 +1853,10 @@ private:
 
   vector<std::reference_wrapper<task>> previous_task;
   vector<std::reference_wrapper<task>> parent_task;
+
+  std::list<std::reference_wrapper<task>> bookmarks;
+  std::list<std::reference_wrapper<task>>::iterator cur_bookmark_pos;
+  std::list<std::reference_wrapper<task>>::iterator prev_bookmark_pos;
 
   bool move_mode;
   std::list<task>::iterator fromtask;
@@ -1999,6 +2202,11 @@ void print_help(const char *programname) {
     cout << "-v print version" << endl;
     cout << "-h print help" << endl;
     cout << "-r reset session" << endl;
+    cout << "-m <option>" << endl;
+    cout << "   select menu type" << endl;
+    cout << "   option \"0\" short menu \"1\" extended menu" << endl;
+    cout << "-f <filename.md>" << endl;
+    cout << "   Inserts another todofile to current file to user given location. Works only with -m 1." << endl;
     cout << "-e erase metadata (erases all timer information from the file and quits. Does a full timer/setting reset.)" << endl;
     cout << "-d disable metadata (disables storing timer information to the file. Erases existing timer information from the file.)" << endl;
     cout << "-s <option>\n"; 
@@ -2100,21 +2308,40 @@ int main(int argc, const char *argv[])
           i++;
           // show statistics
           // show_statistics(todofile);
+      } else if(strcmp(argv[i], "-m") == 0) {
+          if(i+1 < argc && isdigit(argv[i+1][0])) {
+              // set the option
+              menu_type = stoi(argv[i+1]);
+          }
+          i++;
+      } else if(strcmp(argv[i], "-f") == 0) {
+          if(i+1 < argc) {
+              // set the option
+              insertfile = argv[i+1];
+          }
+          if (!file_exists(insertfile)) {
+            cerr << "Cannot find file " << insertfile << "\n"; 
+            return 1;
+          }
+          i++;
       } else {
           if(argv[i][0] == '-') {
             cout << "Unknown option\n " << argv[i];
             return  1;
           } else { 
-	    if(todofile.size() == 0) { 
+	    if(todofile.length() == 0) { 
               todofile = argv[i]; 
             } else {
               cout << "Unknown arguments given\n";
                return 1;
-	    }
+      	    }
           }
       }
- 
-  }      
+  }    
+  if(todofile.length() == 0) {
+    cerr << "No filename given.\n";
+    return 1;
+  }  
   cout << "Opening " << todofile << "\n";
   metadata=get_metadata(todofile);
   // if there is no metadata, prompt user

@@ -2,6 +2,17 @@
 
 This program makes todo lists easily readable and editable and helps to divide tasks into subtasks. It also tracks the time spent on each task and can be used to write small notes. This is an experimental hobby project that is under construction.
 
+
+Development branch
+==================
+
+This branch contains broken features that are under development.
+
+Currently working on bookmarks (b to toggle, n,m navigate), command palette and organization mode
+
+But these features are not yet working.
+
+
 Demo
 ====
 

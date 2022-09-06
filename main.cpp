@@ -330,21 +330,29 @@ double get_relative_size(string input)
   return stod(value);
 }
 int bookmark_counter=0;
+
 struct task
 {
   bool is_note;
   bool highlighted_for_copy;
   bool completed;
   double importance;
-  int bookmark_id = 0;
+  int bookmark_id = -1;
 
   string name;
   string comment;
   std::list<task> subtasks;
+
   // parent task
   task *parent;
   std::map<string, string> metadata;
 };
+
+string print_parent_names(task &task) {
+  if(task.parent == NULL) return "";
+  return "<-"+task.name+print_parent_names(*task.parent);
+}
+
 
 string remove_whitespace(string input)
 {
@@ -520,10 +528,11 @@ void print_task_rec(ofstream &file, task &task, int level)
   return;
 }
 
+
+
 void update_parents(task &task)
 {
-  task.parent = nullptr;
-  for (auto subtask : task.subtasks)
+  for (auto &subtask : task.subtasks)
   {
     subtask.parent = &task;
     update_parents(subtask);
@@ -881,6 +890,8 @@ public:
       elements.push_back(text(icon + entries[i]) | bgcolor(Color::YellowLight) | style | focused);
     } else if(itemcolors.size() == entries.size() && itemcolors[i] == 3) {
       elements.push_back(text(icon + entries[i]) | bgcolor(Color::YellowLight) | color(Color::GreenLight) | style | focused);
+    } else if(itemcolors.size() == entries.size() && itemcolors[i] == 4) {
+      elements.push_back(text(icon + entries[i]) | color(Color::YellowLight) | style | focused);
     } else {
       elements.push_back(text(icon + entries[i]) | style | focused);
     }
@@ -919,18 +930,19 @@ public:
                         L"Start working",
                         L"Stop working",
                         L"Select task at random",
-                        L"Toggle bookmarks",
+                        L"Show command palette",
                         L"Exit"};
     } else {
         menu.entries = {L"Go Back",
                         L"Add task above",
                         L"Add note above",
                         L"Convert to project",
-                        L"Remove task / note",
+                        L"Remove recursive",
                         L"Start working",
                         L"Stop working",
                         L"Select task at random",
                         L"Insert others under selected",
+                        L"Insert completed under selected",
                         L"Insert from file",
                         L"Exit"};
     }
@@ -1097,11 +1109,12 @@ public:
         {
           ctit.completed = false;
         }
-        if (previous_task.size() > 0)
+        updateTree();
+        if (ctit.parent != NULL)
         {
-          current_active_task = previous_task.back();
+          current_active_task = *ctit.parent;
           updateSelection();
-          previous_task.pop_back();
+//          previous_task.pop_back();
         }
       }
       else if (menu.selected == 1)
@@ -1159,7 +1172,7 @@ public:
               annotation="Cannot convert note to project!";
               return;
             }
-            previous_task.push_back(ctit);
+            //fix: previous_task.push_back(ctit);
             current_active_task = *it;
             input_1.TakeFocus();
           }
@@ -1185,6 +1198,9 @@ public:
                   return;
               } else { 
                 // deposit times into parent
+                task &rt = root_task;
+                rt.parent = NULL;
+
                 update_parents(ctit);
                 // get total time spent on this task
                 auto totaltime=get_total_time((*it));
@@ -1239,8 +1255,13 @@ public:
         }
         string title_end;
         title_end += " (";
-        title_end += remove_whitespace_from_end(ctit.name);
+        //title_end += remove_whitespace_from_end(ctit.name);
         bool first = true;
+        updateTree();
+        if(ctit.parent != NULL) {
+          title_end += (print_parent_names(ctit).erase(0,2));
+        }
+ #if 0        
         for (auto ct : previous_task)
         {
           task &ctask = ct;
@@ -1259,6 +1280,7 @@ public:
             title_end += remove_whitespace_from_end(ctask.name);
           }
         }
+#endif
         title_end += ")";
         if (title_end.compare(" ()") > 0)
           work_task_title += title_end;
@@ -1444,7 +1466,6 @@ public:
       else if (menu.selected == 8 && menu_type == 0)
       {
         // toggle between bookmarks
-
       }
 
 
@@ -1490,14 +1511,14 @@ public:
 
     todomenu.on_bookmark = [&] {
         task &ctit = current_active_task;
-        if(ctit.bookmark_id == 0) {
+        if(ctit.bookmark_id == -1) {
           bookmarks.push_back(current_active_task);
           ctit.bookmark_id = bookmark_counter;
-          put_to_log("Added bookmark number " + to_string(bookmark_counter));
+//          put_to_log("Added bookmark number " + to_string(bookmark_counter));
           bookmark_counter++;
-
+          cur_bookmark_pos = bookmarks.begin();
         } else {
-          put_to_log("Erasing bookmark " + to_string(ctit.bookmark_id));
+//        put_to_log("Erasing bookmark " + to_string(ctit.bookmark_id));
           auto deleteit=bookmarks.begin();
           for (auto it=bookmarks.begin(); it!=bookmarks.end(); ++it) {
             task &ait = *it;
@@ -1509,42 +1530,75 @@ public:
             bookmarks.erase(deleteit);
             put_to_log("Succesfully erased ");
           }
-          ctit.bookmark_id = 0;
+          ctit.bookmark_id = -1;
+    
           updateSelection();
         }
 
     };
 
     todomenu.on_bookmark_next = [&] {
-         put_to_log("Toggling bookmarks. Size is " + to_string(bookmarks.size()));
 
         if(bookmarks.size() == 0) {
           return;
         }
+        ++cur_bookmark_pos;
         bool has_position=false;
+
         for (auto it=bookmarks.begin(); it!=bookmarks.end(); ++it) {
-          if(it == cur_bookmark_pos) has_position=true;
+          if(it == cur_bookmark_pos) {
+            has_position=true;
+          }
         }
-        put_to_log("Toggling bookmarks. Size is " + to_string(bookmarks.size()));
-        prev_bookmark_pos = cur_bookmark_pos;
 
         if(!has_position) {
-          cur_bookmark_pos = bookmarks.begin();
-        }
-        if(prev_bookmark_pos == cur_bookmark_pos) {
-          // attempt to increment the position
-          if(cur_bookmark_pos == bookmarks.end()) {
-             cur_bookmark_pos = bookmarks.begin();
-          } else {
-            if(cur_bookmark_pos != bookmarks.end() && bookmarks.size() > 0) {
-              ++cur_bookmark_pos;
-            }
-          }
+          cur_bookmark_pos=bookmarks.begin();
         }
 
         current_active_task = (*cur_bookmark_pos);
 
+
         updateSelection();
+
+        task &ctit = current_active_task;
+        task &rt = root_task;
+        
+        rt.parent = NULL;
+        update_parents(root_task);
+
+    };
+
+    todomenu.on_bookmark_prev = [&] {
+
+        if(bookmarks.size() == 0) {
+          return;
+        }
+        --cur_bookmark_pos;
+        bool has_position=false;
+
+        for (auto it=bookmarks.begin(); it!=bookmarks.end(); ++it) {
+          if(it == cur_bookmark_pos) {
+            has_position=true;
+          }
+        }
+
+        if(!has_position) {
+          if(bookmarks.size() > 1) {
+                cur_bookmark_pos=bookmarks.end();
+                --cur_bookmark_pos;
+          } else {
+            cur_bookmark_pos = bookmarks.begin();
+          }
+        }
+        current_active_task = (*cur_bookmark_pos);
+
+        updateSelection();
+
+        task &ctit = current_active_task;
+        task &rt = root_task;
+        
+        rt.parent = NULL;
+        update_parents(root_task);
 
     };
 
@@ -1710,7 +1764,7 @@ public:
             // prevent from moving to folder which is hightlighted for copy
             // otherwise user can try to move folder into itself
             if(!task.highlighted_for_copy) {
-              previous_task.push_back(cat);
+             // fix: previous_task.push_back(cat);
               current_active_task = task;
               updateSelection();
               return;
@@ -1738,10 +1792,11 @@ public:
 
       if (all_tasks_completed)
       {
-        if (previous_task.size() > 0)
-        {
+
+//        if (previous_task.size() > 0)
+ //       {
           cat.completed = true;
-        }
+ //       }
       }
       else
       {
@@ -1757,6 +1812,12 @@ public:
     input_2.TakeFocus();
 
   }
+
+void updateTree() {
+  task &root = root_task;
+  root.parent = NULL;
+  update_parents(root_task);
+}
 
   void updateSelection()
   {
@@ -1789,7 +1850,10 @@ public:
       if(!task.is_note) {
           if(task.highlighted_for_copy) {
             colors.push_back(2);
-          } else {
+          } else if(task.bookmark_id >= 0) {
+            colors.push_back(4);
+          }
+          else {
             colors.push_back(0);
           }
 
@@ -1805,7 +1869,7 @@ public:
           if(task.highlighted_for_copy) {
             colors.push_back(3);
           } else {
-            colors.push_back(1);
+              colors.push_back(1);
           }
           taskname = to_wstring("  - ");
       }
@@ -1823,10 +1887,18 @@ public:
   Element Render() override
   {
     task &cat = current_active_task;
-    return window(text(to_wstring(cat.name)) | hcenter, vbox(
-                                                            {hbox({vbox(todomenu.Render(), input_2.Render(), input_1.Render()) | frame, menu.Render() /*, input_1.Render()*/}) |
-                                                                 flex,
-                                                             timergauge.Render() | size(HEIGHT, GREATER_THAN, 5)}));
+    if(cat.bookmark_id>=0) {
+        return window(text(to_wstring(cat.name)) | bgcolor(Color::Yellow) | hcenter, vbox(
+                                                                {hbox({vbox(todomenu.Render(), input_2.Render(), input_1.Render()) | frame, menu.Render() /*, input_1.Render()*/}) |
+                                                                      flex,
+                                                                  timergauge.Render() | size(HEIGHT, GREATER_THAN, 5)}));
+    } else {
+        return window(text(to_wstring(cat.name)) | hcenter, vbox(
+                                                                {hbox({vbox(todomenu.Render(), input_2.Render(), input_1.Render()) | frame, menu.Render() /*, input_1.Render()*/}) |
+                                                                      flex,
+                                                                  timergauge.Render() | size(HEIGHT, GREATER_THAN, 5)}));
+
+    }
   }
 
 private:
@@ -1851,7 +1923,7 @@ private:
   std::reference_wrapper<task> root_task = tmptask;
   std::list<task>::iterator active_task;
 
-  vector<std::reference_wrapper<task>> previous_task;
+//  vector<std::reference_wrapper<task>> previous_task;
   vector<std::reference_wrapper<task>> parent_task;
 
   std::list<std::reference_wrapper<task>> bookmarks;

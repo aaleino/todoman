@@ -1522,15 +1522,15 @@ public:
           auto deleteit=bookmarks.begin();
           for (auto it=bookmarks.begin(); it!=bookmarks.end(); ++it) {
             task &ait = *it;
-            if(ait.bookmark_id = ctit.bookmark_id) {
+            if(ait.bookmark_id == ctit.bookmark_id) {
                 deleteit=it;
             }
           }
           if(bookmarks.size() != 0) {
             bookmarks.erase(deleteit);
             put_to_log("Succesfully erased ");
+            ctit.bookmark_id = -1;
           }
-          ctit.bookmark_id = -1;
     
           updateSelection();
         }

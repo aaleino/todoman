@@ -45,6 +45,10 @@ SOFTWARE.
 #include <iomanip>
 
 #define ACCUMULATED_TIME "at"
+
+#define BOOKMARK_ID "bid"
+#define BOOKMARK_COUNTER "bic"
+
 #define SESSION_TIME "st"
 #define PAUSE_STAMP "ps"
 
@@ -599,6 +603,7 @@ void save_tasks(string filename, task &task)
   myfile.open(filename);
   if (use_metadata)
   {
+    metadata[BOOKMARK_COUNTER] = to_string(bookmark_counter);
     metadata[SESSION_END_STAMP] = to_string(time(0));
     metadata[ALLTIME_END_STAMP] = to_string(time(0));
     myfile << meta_start_string;
@@ -907,6 +912,21 @@ class TodoManager : public Component
 public:
   std::function<void()> on_quit = [] {};
 
+  void set_bookmarks(task &task) {
+      if(task.metadata.find(BOOKMARK_ID) != task.metadata.end()) {
+          if(stoi(task.metadata[BOOKMARK_ID]) >= 0) {
+            task.bookmark_id=stoi(task.metadata[BOOKMARK_ID]);
+            bookmarks.push_back(task);
+          } 
+          cur_bookmark_pos = bookmarks.begin();
+      } else {
+      }
+      for (auto &ctask : task.subtasks) {
+          set_bookmarks(ctask);
+      }
+  }
+
+
   TodoManager(task &_root_task)
   {
     input_1.set_colormode(1);
@@ -964,6 +984,7 @@ public:
     left_container.Add(&todomenu);
     left_container.Add(&input_2);
     left_container.Add(&input_1);
+
 
     todomenu.selected_style = bgcolor(Color::Blue);
     todomenu.focused_style = bgcolor(Color::BlueLight);
@@ -1528,13 +1549,14 @@ public:
           }
           if(bookmarks.size() != 0) {
             bookmarks.erase(deleteit);
-            put_to_log("Succesfully erased ");
             ctit.bookmark_id = -1;
           }
-    
           updateSelection();
         }
-
+        if(use_metadata) {
+          put_to_log("adding metadata " + to_string(bookmark_counter));
+            ctit.metadata[BOOKMARK_ID] = to_string(ctit.bookmark_id); 
+        }    
     };
 
     todomenu.on_bookmark_next = [&] {
@@ -1683,9 +1705,8 @@ public:
 
             ctit.subtasks.push_back(newtask);
             task &mit = active_task_for_move;
-            mit.subtasks.erase(fromtask);
-
             (*fromtask).highlighted_for_copy = false;
+            mit.subtasks.erase(fromtask);
             updateSelection();
             return;
           }
@@ -2119,6 +2140,8 @@ string format_time_stamp(time_t time) {
 }
 
 
+
+
 // print statistics
 void print_statistics(task &task, bool isroot, bool session_only)
 {
@@ -2448,6 +2471,7 @@ int main(int argc, const char *argv[])
         metadata[WORK_TIME] = to_string((int)(worktime));
         metadata[ALLTIME_STAMP] = to_string(time(NULL));
         metadata[SESSION_STAMP] = to_string(time(NULL));
+        metadata[BOOKMARK_COUNTER] = to_string(0);
         // add_metadata(todofile);
       }
   } else {
@@ -2473,9 +2497,13 @@ int main(int argc, const char *argv[])
     } else {
       metadata[WORK_TIME] = to_string((int)worktime);
     }
+    if(metadata.find(BOOKMARK_COUNTER) != metadata.end()) {
+      bookmark_counter = stoi(metadata[BOOKMARK_COUNTER]);
+    }
   }
   srand(time(NULL));
-      
+  
+
   // if metadata contains accumulated time use it as accumulated time
   if(metadata.find(ACCUMULATED_TIME) != metadata.end()) {
       accumulated_time = stoi(metadata[ACCUMULATED_TIME]);
@@ -2528,6 +2556,8 @@ int main(int argc, const char *argv[])
     }
   }
   check_completed_projects(root_task);
+
+
   auto screen = ScreenInteractive::Fullscreen();
   bool should_quit = false;
 
@@ -2572,6 +2602,9 @@ int main(int argc, const char *argv[])
 
 
   component.on_quit = screen.ExitLoopClosure();
+  component.set_bookmarks(root_task);
+  component.updateSelection();
+
   screen.Loop(&component);
   should_quit = true;
 

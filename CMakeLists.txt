@@ -13,11 +13,10 @@ if(NOT ftxui_POPULATED)
   FetchContent_Populate(ftxui)
   add_subdirectory(${ftxui_SOURCE_DIR} ${ftxui_BINARY_DIR} EXCLUDE_FROM_ALL)
 endif()
+#------------------------------------------------------------------------------
 
-# ------------------------------------------------------------------------------
 
-
-set(CMAKE_CXX_FLAGS "-O3")
+set(CMAKE_CXX_FLAGS "-g")
 
 project(todoman
   LANGUAGES CXX
@@ -35,6 +34,6 @@ set_target_properties(todoman PROPERTIES CXX_STANDARD 17)
 
 install(TARGETS todoman RUNTIME DESTINATION "bin")
 
-#target_compile_options(todoman PRIVATE -fsanitize=address)
-#target_link_options(todoman PRIVATE -fsanitize=address)
-	
+target_compile_options(todoman PRIVATE -fsanitize=address)
+target_link_options(todoman PRIVATE -fsanitize=address)
+

@@ -912,7 +912,7 @@ class TodoManager : public Component
 public:
   std::function<void()> on_quit = [] {};
 
-  void set_bookmarks(task &task) {
+  void  set_bookmarks(task &task) {
       if(task.metadata.find(BOOKMARK_ID) != task.metadata.end()) {
           if(stoi(task.metadata[BOOKMARK_ID]) >= 0) {
             task.bookmark_id=stoi(task.metadata[BOOKMARK_ID]);
@@ -1548,9 +1548,10 @@ public:
             }
           }
           if(bookmarks.size() != 0) {
-            bookmarks.erase(deleteit);
             ctit.bookmark_id = -1;
+            bookmarks.erase(deleteit);
           }
+          cur_bookmark_pos = bookmarks.begin();
           updateSelection();
         }
         if(use_metadata) {

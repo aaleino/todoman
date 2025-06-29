@@ -655,25 +655,25 @@ public:
                   size(WIDTH, EQUAL, 40)}));
   }
 
-  bool OnEvent(Event event) override
-  {
-    if (event == Event::Special("\x1b[5~"))
-    {
-      on_pageup();
+
+  bool OnEvent(Event event) override {
+    if (event == Event::Special("\x1b[5~")) {
+        on_pageup();
+        return true; 
     }
-    else if (event == Event::Special("\x1b[6~"))
-    {
-      on_pagedown();
+    
+    if (event == Event::Special("\x1b[6~")) {
+        on_pagedown();
+        return true; 
     }
-    else if (event == Event::Special("\x1b[2~"))
-    {
-      on_insert();
+    
+    if (event == Event::Special("\x1b[2~")) {
+        on_insert();
+        return true; 
     }
-    else
-    {
-      return Input::OnEvent(event);
-    }
-  }
+
+    return Input::OnEvent(event);
+}
 
   Element Modified_Render()
   {
@@ -858,28 +858,46 @@ public:
   std::function<void()> on_bookmark_next = []() {};
   std::function<void()> on_bookmark_prev = []() {};
 
-  bool OnEvent(Event event) override {
-    if(event == Event::Special("\x1b[5~")) {
-      on_pageup();
-    } else if(event == Event::Special("\x1b[6~")) {
-      on_pagedown();
-    } else if(event == Event::Special("\x1b[2~")) {
-      on_insert();
-    } else if(event == Event::Special(" ")) {
-      on_space();
-    } else if(event == Event::Special("e")) {
-      on_edit();
-    } else if(event == Event::Special("m")) {
-      on_bookmark_next();
-    } else if(event == Event::Special("n")) {
-      on_bookmark_prev();
-    } else if(event == Event::Special("b")) {
-      on_bookmark();
-    }else {
-      return  Menu::OnEvent(event);
+bool OnEvent(Event event) override {
+    // --- Special keys (using escape codes for your library version) ---
+    if (event == Event::Special("\x1b[5~")) { // PageUp
+        on_pageup();
+        return true;
     }
-  }
+    if (event == Event::Special("\x1b[6~")) { // PageDown
+        on_pagedown();
+        return true;
+    }
+    if (event == Event::Special("\x1b[2~")) { // Insert
+        on_insert();
+        return true;
+    }
 
+    // --- Character keys (Corrected, backward-compatible handling) ---
+    if (event == Event::Character(' ')) { // Space
+        on_space();
+        return true;
+    }
+    if (event == Event::Character('e')) { // Edit
+        on_edit();
+        return true;
+    }
+    if (event == Event::Character('m')) { // Bookmark Next
+        on_bookmark_next();
+        return true;
+    }
+    if (event == Event::Character('n')) { // Bookmark Prev
+        on_bookmark_prev();
+        return true;
+    }
+    if (event == Event::Character('b')) { // Bookmark
+        on_bookmark();
+        return true;
+    }
+    
+    // If no custom event was handled, pass it to the base class.
+    return Menu::OnEvent(event);
+}
   Element Render() {
   std::vector<Element> elements;
   bool is_focused = Focused();
